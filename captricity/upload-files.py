@@ -21,7 +21,7 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 
 ## read api token
-os.chdir('/Users/dennis/scaleupbrazil/')
+os.chdir('/Users/dennis/scaleupbrazil/captricity')
 token_file = open('.captricity-token')
 api_token = token_file.readlines()[0].strip()
 token_file.close()
@@ -31,6 +31,7 @@ client = Client(api_token)
 client.print_help()
 
 doc = client.read_documents()
+
 
 
 
