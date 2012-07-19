@@ -84,16 +84,6 @@ def document_info(client):
 
   return dict(zip(job_names, job_docids))
 
-def main():
-  if 'info' in sys.argv:
-    list_available_methods = client.print_help
-    list_available_methods()
-
-  if 'register' in sys.argv:
-    api_token=get_token()
-    client = Client(api_token)
-    docs_to_read = client.read_documents()
-
 def test_upload():
   api_token=get_token()
   client = Client(api_token)
@@ -111,5 +101,15 @@ def test_upload():
   print 'launched job...'
 
   return client, job
+
+def main():
+  if 'info' in sys.argv:
+    list_available_methods = client.print_help
+    list_available_methods()
+
+  if 'register' in sys.argv:
+    api_token=get_token()
+    client = Client(api_token)
+    docs_to_read = client.read_documents()
 
 main()
