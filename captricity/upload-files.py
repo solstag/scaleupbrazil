@@ -101,11 +101,10 @@ def test_upload():
   job = client.read_job(job['id'])
 
   print 'finished uploading questionnaires...'
+
   # this step costs money!
   client.launch_job(job['id'])
-
   print 'launched job...'
-
   return client, job
 
 def main():
