@@ -1,3 +1,5 @@
+#!/bin/env python
+
 #####################################################################
 # upload-files.py
 #
@@ -13,6 +15,7 @@
 #
 # also, the examples in the captools library are useful
 #
+
 import sys
 import os
 import re
@@ -22,15 +25,11 @@ from captools.api import Client
 
 ## read api token
 ## NB: assumes that the script was run in the scaleupbrazil/captricity directory
-token_file = open('.captricity-token')
-api_token = token_file.readlines()[0].strip()
-token_file.close()
-
-## NB: the application token should be stored in .captricity-token
-client = Client(api_token)
-## this lists all of the (dynamically-created) methods available to
-## our client
-client.print_help()
+def get_token():
+  token_file = open('.captricity-token')
+  api_token = token_file.readlines()[0].strip()
+  token_file.close()
+  return api_token
 
 ## create a new job
 ## the full survey document id is 1969
@@ -46,15 +45,18 @@ client.print_help()
 ##              'name' : 'api-test-job' }
 ##job = client.create_jobs(post_data)
 
+def main():
+  api_token=get_token()
 
+  ## NB: the application token should be stored in .captricity-token
+  client = Client(api_token)
 
+  ## this lists all of the (dynamically-created) methods available to
+  ## our client
+  client.print_help()
 
+  ## figure out which documents to read...
+  docs = client.read_documents()
 
-
-
-
-
-
-
-
+main()
 
