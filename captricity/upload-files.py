@@ -11,13 +11,27 @@
 # see:
 #   https://shreddr.captricity.com/developer/quickstart/
 #
+# also, the examples in the captools library are useful
+#
 import sys
 import os
 import re
 import captools.api
 from captools.api import ThirdPartyApplication
+from captools.api import Client
+
+## read api token
+os.chdir('/Users/dennis/scaleupbrazil/')
+token_file = open('.captricity-token')
+api_token = token_file.readlines()[0].strip()
+token_file.close()
 
 ## NB: the application token should be stored in .captricity-token
+client = Client(api_token)
+client.print_help()
+
+doc = client.read_documents()
+
 
 
 
