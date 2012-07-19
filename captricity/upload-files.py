@@ -32,20 +32,15 @@ def get_token():
   token_file.close()
   return api_token
 
-def new_job (client):
+def new_job (client, document_id = 1969, job_name="api-test-job"):
   """
-  the full survey document id is 1969
-  figured this out by hand using:
-  NB: we don't want to do this all the time!
-  created a job with id 2302 for us to
-  play around with...
+  create a new job, which is a document (template) and
+  one or many scanned-in surveys (image sets).
+  the default document_id, 1969, is the entire individual questionnaire
   """
-  jobs = client.read_jobs()
-  job_names = [x['name'] for x in jobs]
-  job_docids = [x['document']['id'] for x in jobs]
 
-  post_data = { 'document_id' : 1969,
-                'name' : 'api-test-job' }
+  post_data = { 'document_id' : document_id,
+                'name' : job_name }
   job = client.create_jobs(post_data)
   return job
 
@@ -77,7 +72,16 @@ def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
       print "... page %d" % page_number
     
   print "done."
-  
+
+def document_info(client):
+  """Get information about all of the documents (templates) associated with
+     client's account. This is useful for figuring out which document ID
+     number is associated with a given job's document/template."""
+  jobs = client.read_jobs()
+  job_names = [x['name'] for x in jobs]
+  job_docids = [x['document']['id'] for x in jobs]
+
+  return dict(zip(job_names, job_docids))
 
 def main():
   if 'info' in sys.argv:
@@ -92,10 +96,14 @@ def main():
 def test_upload():
   api_token=get_token()
   client = Client(api_token)
-  job = new_job(client)
+  # document_id = 1969 is the full survey
+  # document_id = 2317 is just a few fields
+  job = new_job(client, document_id=2317, name='small-api-test')
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
+  return job
+
 
 
 main()
