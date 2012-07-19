@@ -80,16 +80,19 @@ def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
   
 
 def main():
-  api_token=get_token()
+  if 'info' in sys.argv:
+    list_available_methods = client.print_help
+    list_available_methods()
 
-  client = Client(api_token)
+  if 'register' in sys.argv:
+    api_token=get_token()
+    client = Client(api_token)
+    docs_to_read = client.read_documents()
 
-  list_available_methods = client.print_help
-  list_available_methods()
-
+def temp():
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
 
-main()
 
+main()
