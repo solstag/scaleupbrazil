@@ -39,9 +39,10 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   the default document_id, 1969, is the entire individual questionnaire
   """
 
-  post_data = { 'document_id' : document_id,
-                'name' : job_name }
+  post_data = { 'document_id' : document_id }
   job = client.create_jobs(post_data)
+  put_data = { 'name' : job_name }
+  job = client.update_job(job['id'], put_data)
   return job
 
 def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
@@ -97,13 +98,18 @@ def test_upload():
   api_token=get_token()
   client = Client(api_token)
   # document_id = 1969 is the full survey
-  # document_id = 2317 is just a few fields
-  job = new_job(client, document_id=2317, name='small-api-test')
+  # document_id = 2319 is just a few fields
+  job = new_job(client, document_id=1969, job_name='small-api-test')
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
-  return job
 
+  print 'finished uploading questionnaires...'
+  # this step costs money!
+  client.launch_job(job['id'])
 
+  print 'launched job...'
+
+  return client, job
 
 main()
