@@ -32,7 +32,7 @@ def get_token():
   token_file.close()
   return api_token
 
-def new_job ():
+def new_job (client):
   """
   the full survey document id is 1969
   figured this out by hand using:
@@ -89,7 +89,10 @@ def main():
     client = Client(api_token)
     docs_to_read = client.read_documents()
 
-def temp():
+def test_upload():
+  api_token=get_token()
+  client = Client(api_token)
+  job = new_job(client)
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
