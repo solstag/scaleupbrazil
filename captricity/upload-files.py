@@ -32,10 +32,24 @@ client = Client(api_token)
 ## our client
 client.print_help()
 
-## figure out which documents to read...
-docs = client.read_documents()
-
 ## create a new job
+## the full survey document id is 1969
+## figured this out by hand using:
+##  jobs = client.read_jobs()
+##  job_names = [x['name'] for x in jobs]
+##  job_docids = [x['document']['id'] for x in jobs]
+
+## NB: we don't want to do this all the time!
+## created a job with id 2302 for us to
+## play around with...
+##post_data = { 'document_id' : 1969,
+##              'name' : 'api-test-job' }
+##job = client.create_jobs(post_data)
+
+
+
+
+
 
 
 
