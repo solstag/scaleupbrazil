@@ -27,7 +27,7 @@ def get_token():
   """
   NB: assumes that the script was run in the scaleupbrazil/captricity directory
   """
-  token_file = open('~/.scaleupbrazil/captricity-token')
+  token_file = open(os.path.expanduser('~/.scaleupbrazil/captricity-token'))
   api_token = token_file.readlines()[0].strip()
   token_file.close()
   return api_token
@@ -49,6 +49,36 @@ def new_job ():
   job = client.create_jobs(post_data)
   return job
 
+def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
+  """
+  Take a list of questionnaire IDs that should be uploaded, the id of the job that
+  we  want to associate them with, and the path to the directory where they are
+  stored.
+  For each questionnaire to upload, read the png files for all of its pages in,
+  associate it with an image set, and upload them.
+  """
+
+  for qid in questionnaire_ids:
+
+    print "uploading questionnaire %s" % qid
+
+    # grab the filenames for all of the pages associated with this questionnaire
+    filenames = ["%s/quest_%s-%d.png" % (png_path, qid, x) for x in range(22)]
+
+    # create an instance set to hold all of the page images for this questionnaire
+    post_data = {'name' : qid}
+    instance_set = client.create_instance_sets(job_id, post_data)
+
+    # fill the instance set in with the images for each page of the questionnaire
+    for page_number, filename in enumerate(filenames):
+      post_data = {'image' : open(filename),
+                   'image_name' : 'page %s' % page_number}
+      client.create_iset_instance(instance_set['id'], page_number, post_data)
+      print "... page %d" % page_number
+    
+  print "done."
+  
+
 def main():
   api_token=get_token()
 
@@ -57,8 +87,9 @@ def main():
   list_available_methods = client.print_help
   list_available_methods()
 
-  # figure out which documents to read...
-  docs = client.read_documents()
+  upload_questionnaires(client, job['id'],
+                        ['28_00143', '28_00140'],
+                        os.path.expanduser("~/.scaleupbrazil/pngs"))
 
 main()
 
