@@ -23,11 +23,11 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 
-# def get_token():
+def get_token():
   """
   NB: assumes that the script was run in the scaleupbrazil/captricity directory
   """
-  token_file = open('~/.scaleupbrasil/captricity-token')
+  token_file = open('~/.scaleupbrazil/captricity-token')
   api_token = token_file.readlines()[0].strip()
   token_file.close()
   return api_token
