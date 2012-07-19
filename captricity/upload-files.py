@@ -23,11 +23,11 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 
-# def get_token():
+def get_token():
   """
   NB: assumes that the script was run in the scaleupbrazil/captricity directory
   """
-  token_file = open('~/.scaleupbrasil/captricity-token')
+  token_file = open('~/.scaleupbrazil/captricity-token')
   api_token = token_file.readlines()[0].strip()
   token_file.close()
   return api_token
@@ -50,15 +50,14 @@ def new_job ():
   return job
 
 def main():
-  api_token=get_token()
+  if 'info' in sys.argv:
+    list_available_methods = client.print_help
+    list_available_methods()
 
-  client = Client(api_token)
-
-  list_available_methods = client.print_help
-  list_available_methods()
-
-  # figure out which documents to read...
-  docs = client.read_documents()
+  if 'register' in sys.argv:
+    api_token=get_token()
+    client = Client(api_token)
+    docs_to_read = client.read_documents()
 
 main()
 
