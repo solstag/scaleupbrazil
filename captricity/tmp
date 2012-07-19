@@ -1,0 +1,208 @@
+Dataset
+	A dataset resource is a csv file containing the results of a processed job.
+
+    <p>This is the same csv file as the one users of the site can download in the browse results page</p>
+
+	Available methods:
+		read_dataset(id)  -  Corresponding API call: GET to ^/api/shreddr/data-set/(?P<id>[\d]+)/$
+
+Datasets
+	A list of datasets associated with the selected job. [id] refers to the id attribute of the job resource.
+
+	Available methods:
+		read_datasets(id)  -  Corresponding API call: GET to ^/api/shreddr/job/(?P<id>[\d]+)/data-set/$
+
+Document
+	The document resource represents a blank template form (including each blank template page).
+
+    <p>If you're looking for information on completed forms, look at Instance Sets.</p>
+
+	Available methods:
+		read_document(id)  -  Corresponding API call: GET to ^/api/shreddr/document/(?P<id>[\d]+)$
+		update_document(id,{name})  -  Corresponding API call: PUT to ^/api/shreddr/document/(?P<id>[\d]+)$
+
+Documents
+	A list of document resources owned by the calling account.  See the document resource for an explanation of documents.
+
+	Available methods:
+		read_documents()  -  Corresponding API call: GET to ^/api/shreddr/document/$
+
+Incomplete Instance Sets
+	Returns all of the instance sets for the job specified by [id] that are missing
+    completed form pages (instances).  A job cannot be submitted for processing
+    unless all instance sets are complete.  See the iset_instances and
+    iset_instance resources to upload missing pages.
+
+	Available methods:
+		read_incomplete_instance_sets(id)  -  Corresponding API call: GET to ^/api/shreddr/job/(?P<id>[\d]+)/incomplete-instance-set/$
+
+Instance
+	An instance is a completed form page.  If, for example, your
+    form is a 3-page survey, an instance would be one filled-in page from
+    a respondent.  This resource serves the metadata associated with an
+    instance.  See the instance_aligned_image resource for the image data.
+
+	Available methods:
+		read_instance(id)  -  Corresponding API call: GET to ^/api/shreddr/instance/(?P<id>[\d]+)$
+
+Instance Aligned Image
+	This serves the image data associated with an instance. The image is
+    post-processing: the original instance is first aligned to the template
+    (sheet) image and then any fields marked as sensitive are redacted.  This
+    image is only guaranteed to be available if the instance property
+    alignment_succeeded is true.
+
+	Available methods:
+		read_instance_aligned_image(id)  -  Corresponding API call: GET to ^/api/shreddr/instance/(?P<id>[\d]+)/aligned-image$
+
+Instance Set
+	An instance set is a completed form that maps to a job's blank template
+    form (document).  For example, if your job's form is a two page survey,
+    then a complete instance set would have 2 associated instances: a complated page 1 and a
+    completed page 2 (both from the same respondent).
+
+    <p>A complete instance set will have the same number of completed pages
+    (instances) as the job's blank template form has pages (sheets).  To add or remove
+    filled-in pages, see the iset_instances and iset_instance resource.</p>
+
+	Available methods:
+		delete_instance_set(id)  -  Corresponding API call: DELETE to ^/api/shreddr/instance-set/(?P<id>[\d]+)$
+		read_instance_set(id)  -  Corresponding API call: GET to ^/api/shreddr/instance-set/(?P<id>[\d]+)$
+
+Instance Sets
+	An instance set is a set of the filled-in pages (instances) slated to be
+    digitized in the job specified by [id].  A POST to this resource will create a new
+    empty instance set associated with the job.  See instance_set resource for
+    more details.
+
+	Available methods:
+		create_instance_sets(id,{name,extra_pages_settings})  -  Corresponding API call: POST to ^/api/shreddr/job/(?P<id>[\d]+)/instance-set/$
+		read_instance_sets(id)  -  Corresponding API call: GET to ^/api/shreddr/job/(?P<id>[\d]+)/instance-set/$
+
+Iset Instance
+	This resource allows you to manipulate the completed pages (instances)
+    associated with the instance set specified by [id] according to their zero-indexed
+    [page] number.  If the blank template form associated with this instance set's job is 2
+    pages, you are allowed to read and update pages 0 and 1 on this
+    instance set.
+
+    <ul>
+
+    <li> A GET of [iset] and [page] will return the JSON of the instance
+    associated with that [page] of the instance set.</li>
+
+    <li> A POST or PUT to [iset] and [page] will create or update the instance
+    corresponding to this instance set's [page].  Note: if you are creating a
+    new instance, both an image AND an image_name are required.</li>
+
+    <li> A DELETE to [iset] and [page] will delete the instance corresponding
+    to this instance set's [page].</li>
+
+    </ul>
+
+    You can also manipulate instances using their ID.  See the instance resource.
+
+	Available methods:
+		create_iset_instance(id,page,{image,image_name})  -  Corresponding API call: POST to ^/api/shreddr/instance-set/(?P<id>[\d]+)/page/(?P<page>[\d]+)$
+		delete_iset_instance(id,page)  -  Corresponding API call: DELETE to ^/api/shreddr/instance-set/(?P<id>[\d]+)/page/(?P<page>[\d]+)$
+		read_iset_instance(id,page)  -  Corresponding API call: GET to ^/api/shreddr/instance-set/(?P<id>[\d]+)/page/(?P<page>[\d]+)$
+		update_iset_instance(id,page,{image,image_name})  -  Corresponding API call: PUT to ^/api/shreddr/instance-set/(?P<id>[\d]+)/page/(?P<page>[\d]+)$
+
+Iset Instances
+	This lists all the completed pages (instances) that belong to the specified
+    instance set.  For more information, see the iset_instance and instance
+    resource.
+
+	Available methods:
+		read_iset_instances(id)  -  Corresponding API call: GET to ^/api/shreddr/instance-set/(?P<id>[\d]+)/page/$
+
+Job
+	A job resource links all of the information needed to run a set of completed forms through data entry.
+
+    <p>Jobs pull together these resources:</>
+    <ul>
+        <li>A document which holds the blank template form images and all of the field definitions</li>
+        <li>The completed form scans which are stored in instance sets.</li>
+        <li>After the job has been processed, the resulting data sets.</li>
+    </ul>
+
+    <p>Users of Captricity manage jobs to setup, pay for, and run a set of completed forms through data entry.</p>
+
+	Available methods:
+		create_job(id,{submit_job_action})  -  Corresponding API call: POST to ^/api/shreddr/job/(?P<id>[\d]+)$
+		read_job(id)  -  Corresponding API call: GET to ^/api/shreddr/job/(?P<id>[\d]+)$
+		update_job(id,{name,was_manually_resumed})  -  Corresponding API call: PUT to ^/api/shreddr/job/(?P<id>[\d]+)$
+
+Jobs
+	A list of jobs owned by the calling account.  See the job resource for an explanation of jobs.
+
+    <p>You can filter the list by the status attribute by passing in an optional [status] GET parameter</p>
+
+	Available methods:
+		create_jobs(,{document_id})  -  Corresponding API call: POST to ^/api/shreddr/job/$
+		read_jobs()  -  Corresponding API call: GET to ^/api/shreddr/job/$
+
+Public Dataset
+	
+
+	Available methods:
+		read_public_dataset(id)  -  Corresponding API call: GET to ^/api/front/public-dataset/(?P<id>[\d]+)$
+		update_public_dataset(id,{title,tag_line,description,slug,thumbnail_image,leader_image,release_time,dataset_pk})  -  Corresponding API call: PUT to ^/api/front/public-dataset/(?P<id>[\d]+)$
+
+Public Datasets
+	
+
+	Available methods:
+		create_public_datasets(,{title,tag_line,description,slug,thumbnail_image,leader_image,release_time,dataset_pk})  -  Corresponding API call: POST to ^/api/front/public-dataset/$
+		read_public_datasets()  -  Corresponding API call: GET to ^/api/front/public-dataset/$
+
+Sheet Image
+	Serves the image associated with a blank template page.
+    See the document resource for more details.
+
+	Available methods:
+		read_sheet_image(id)  -  Corresponding API call: GET to ^/api/shreddr/sheet/(?P<id>[\d]+)/image$
+
+Sheet Thumbnail
+	This serves a thumbnail image associated with the sheet specified by [id].
+    The [size] parameter is expected to be number
+    corresponding the desired width in pixels followed by a lowercase 'w'. By
+    default, the following thumbnail sizes are available:
+
+    <ul>
+    <li>100 pixels wide (100w)</li>
+    <li>300 pixels wide (300w)</li>
+    <li>590 pixels wide (590w)</li>
+    </ul>
+
+    Non-default thumbnail sizes will be queued for creation on demand.  If a
+    thumbnail is in the process of being created but is not available, this resource
+    returns HTTP status code 202.  If the sheet is not found or there was
+    a problem creating the thumbnail, this function will return HTTP status
+    code 404.
+
+	Available methods:
+		read_sheet_thumbnail(id,size)  -  Corresponding API call: GET to ^/api/shreddr/sheet/(?P<id>[\d]+)/thumbnail/(?P<size>[^/]+)$
+
+Shred
+	This resource returns the metadata (not the image data) for a subregion completed form page.
+    <p>To fetch the image data, use the shred_image resource.</p>
+    <p>In the lingo of this API, a shred resource defines a portion of an instance's image for a given field.</p>
+
+	Available methods:
+		read_shred(id)  -  Corresponding API call: GET to ^/api/shreddr/shred/(?P<id>[\d]+)$
+
+Shred Image
+	Serves the image data for a shred.
+    See the shred resources for more
+    details and access to image metadata.
+
+	Available methods:
+		read_shred_image(id)  -  Corresponding API call: GET to ^/api/shreddr/shred/(?P<id>[\d]+)/image$
+
+Shreds
+	A list of shreds associated with a job.  See the shred resource for information on shreds.
+    <p>The id is the id attribute of the job resource.</p>
+
+	Available methods:
+		read_shreds(id)  -  Corresponding API call: GET to ^/api/shreddr/job/(?P<id>[\d]+)/shred/$

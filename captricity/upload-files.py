@@ -21,16 +21,22 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 
 ## read api token
-os.chdir('/Users/dennis/scaleupbrazil/captricity')
+## NB: assumes that the script was run in the scaleupbrazil/captricity directory
 token_file = open('.captricity-token')
 api_token = token_file.readlines()[0].strip()
 token_file.close()
 
 ## NB: the application token should be stored in .captricity-token
 client = Client(api_token)
+## this lists all of the (dynamically-created) methods available to
+## our client
 client.print_help()
 
-doc = client.read_documents()
+## figure out which documents to read...
+docs = client.read_documents()
+
+## create a new job
+
 
 
 
