@@ -80,9 +80,10 @@ def document_info(client):
      number is associated with a given job's document/template."""
   jobs = client.read_jobs()
   job_names = [x['name'] for x in jobs]
+  job_ids = [x['id'] for x in jobs]  
   job_docids = [x['document']['id'] for x in jobs]
 
-  return dict(zip(job_names, job_docids))
+  return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))
 
 def main():
   if 'info' in sys.argv:
@@ -100,9 +101,14 @@ def test_upload():
   # document_id = 1969 is the full survey
   # document_id = 2319 is just a few fields
   job = new_job(client, document_id=1969, job_name='small-api-test')
+
+  print "created job with id %d" % job['id']
+  
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
+
+  job = client.read_job(job['id'])
 
   print 'finished uploading questionnaires...'
   # this step costs money!
