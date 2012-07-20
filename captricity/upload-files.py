@@ -23,6 +23,17 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 
+def document_info(client):
+  """Get information about all of the documents (templates) associated with
+     client's account. This is useful for figuring out which document ID
+     number is associated with a given job's document/template."""
+  jobs = client.read_jobs()
+  job_names = [x['name'] for x in jobs]
+  job_ids = [x['id'] for x in jobs]  
+  job_docids = [x['document']['id'] for x in jobs]
+
+  return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))
+
 def get_token():
   """
   NB: assumes that the script was run in the scaleupbrazil/captricity directory
@@ -56,10 +67,10 @@ def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
 
   for qid in questionnaire_ids:
 
-    print "uploading questionnaire %s" % qid
+    print "uploading questionnaire {}".format(qid)
 
     # grab the filenames for all of the pages associated with this questionnaire
-    filenames = ["%s/quest_%s-%d.png" % (png_path, qid, x) for x in range(22)]
+    filenames = ["{}/quest_{}-{}.png".format(png_path, qid, x) for x in range(22)]
 
     # create an instance set to hold all of the page images for this questionnaire
     post_data = {'name' : qid}
@@ -68,53 +79,48 @@ def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
     # fill the instance set in with the images for each page of the questionnaire
     for page_number, filename in enumerate(filenames):
       post_data = {'image' : open(filename),
-                   'image_name' : 'page %s' % page_number}
+                   'image_name' : 'page {}'.format(page_number)}
       client.create_iset_instance(instance_set['id'], page_number, post_data)
-      print "... page %d" % page_number
+      print "... page {}".format(page_number)
     
   print "done."
 
-def document_info(client):
-  """Get information about all of the documents (templates) associated with
-     client's account. This is useful for figuring out which document ID
-     number is associated with a given job's document/template."""
-  jobs = client.read_jobs()
-  job_names = [x['name'] for x in jobs]
-  job_ids = [x['id'] for x in jobs]  
-  job_docids = [x['document']['id'] for x in jobs]
-
-  return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))
-
-def test_upload():
-  api_token=get_token()
-  client = Client(api_token)
+def test_upload(client):
   # document_id = 1969 is the full survey
   # document_id = 2319 is just a few fields
   job = new_job(client, document_id=1969, job_name='small-api-test')
-
-  print "created job with id %d" % job['id']
+  
+  print "created job with id {}".format(job['id'])
   
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/pngs"))
 
-  job = client.read_job(job['id'])
+  job = client.read_job(job['id']) #? this really necessary?
 
   print 'finished uploading questionnaires...'
 
-  # this step costs money!
-  client.launch_job(job['id'])
-  print 'launched job...'
-  return client, job
+  return job['id']
 
 def main():
-  if 'info' in sys.argv:
-    list_available_methods = client.print_help
-    list_available_methods()
+  api_token=get_token()
+  client = Client(api_token)
 
-  if 'register' in sys.argv:
-    api_token=get_token()
-    client = Client(api_token)
-    docs_to_read = client.read_documents()
+  if 'info' in sys.argv:
+    print 'Available methods:'
+    list_available_methods = client.print_help
+    print list_available_methods()
+    print 'Document info:'
+    print document_info(client)
+    print 'Documents to read:'
+    print docs_to_read = client.read_documents()
+
+  if 'test' in sys.argv:
+    job_id = test_upload(client)
+    # this step costs money!
+    if 'money' in sys.argv:
+      client.launch_job(job_id)
+      print 'launched job...'
 
 main()
+
