@@ -112,8 +112,9 @@ def main():
     print list_available_methods()
     print 'Document info:'
     print document_info(client)
-    print 'Documents to read:'
-    print docs_to_read = client.read_documents()
+    #print 'Documents to read:'
+    #docs_to_read = client.read_documents()
+    #print docs_to_read
 
   if 'test' in sys.argv:
     job_id = test_upload(client)
