@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 #####################################################################
 # download-files.py
@@ -24,12 +24,56 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
+import datetime
+import dateutil
 
 def main():
   api_token=get_token()
   client = Client(api_token)
 
-  jobs = client.read_jobs()
+  # figure out the last time we downloaded data
+  # TODO -- handle case where this file doesn't exist
+  try:
+    datefile = open(os.path.expanduser("~/.scaleupbrazil/lastdownload"))
+    lastcheck = datefile.readline().strip()
+    datefile.close()  
+  except IOError:
+    lastcheck = "20120101"
+  lastcheck = dateutil.parser.parse(lastcheck)
 
+  print 'last download was on ', str(lastcheck)
+
+  ##jobs = get_jobs(client, since_date=lastcheck, only_complete=True)
+  jobs = get_jobs(client, only_complete=True)  
+  checktime = datetime.datetime.now()
+  
+  # download the data for each job
+  datasets = []
+  dataset_names = []
+
+  for job in jobs:
+
+    print '\tdownloading: ', job['name']
+
+    for idx, ds in enumerate(client.read_datasets(job['id'])):
+      nextdata = client.read_dataset(ds['id'], accept="text/csv")
+      datasets.append(nextdata)
+      dataset_names.append(str(job['id']) + '-' + str(idx))
+
+  print 'saving datasets to disk...'
+  for idx, ds in enumerate(datasets):
+      fn = os.path.expanduser("~/.scaleupbrazil/downloaded-data/" +
+                              dataset_names[idx] + ".csv")
+      datafile = open(fn, 'w')
+      datafile.write(datasets[idx])
+      datafile.close()
+
+  # update the last check date
+  print 'updating date of last download'
+  datefile = open(os.path.expanduser("~/.scaleupbrazil/lastdownload"), "w")
+  datefile.write(str(checktime))
+  datefile.close()
+
+  print 'done.'
 
 main()

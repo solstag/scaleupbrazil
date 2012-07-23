@@ -6,6 +6,7 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 import time
 import dateutil.parser
+import datetime
 
 def get_jobs(client, since_date = None, name_pattern = None,
              only_complete=False, only_incomplete=False):
@@ -22,8 +23,13 @@ def get_jobs(client, since_date = None, name_pattern = None,
   if since_date != None:
     # TODO - eventually, check to see if since_date is already a datetime; for now,
     # we'll assume it's a string
-    refdate = dateutil.parser.parse(since_date)
+    refdate = None
 
+    if not isinstance(since_date, datetime.datetime):
+      refdate = dateutil.parser.parse(since_date)
+    else:
+      refdate = since_date
+      
     # NB: this relies on short-circuit evaluation of the and...
     jobs = filter( lambda x: ((x['finished'] != None) and
                               (dateutil.parser.parse(x['finished']) >  refdate)),
