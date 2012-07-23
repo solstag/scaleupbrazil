@@ -7,9 +7,12 @@ This file will keep track of some of our comments about Captricity and the Captr
 
 * more generally, for API users, it would be useful to create templates even if they aren't associated with any particular job. I believe we created a template that got deleted when the only job it was affiliated with was also deleted.
 
-* starting a job via the API doesn't seem to have generated an email. it would be nice to have this as an option (sometimes you might want it, and sometimes not)
+* starting a job via the API doesn't seem to have generated an email. it would be nice to have this as an option (sometimes you might want it, and sometimes not). It did send an email when the job was finished, though...
 
 * the API doesn't appear to expose the ability to know the costs of a job that will be submitted. also, it would be nice to be able to query how much money is left in the account, eg, so that we can check whether or not it's time to top up.
+
+* it would be useful to be able to encode skip patterns into the template, so that we don't get charged for trying to read fields which are structurally blank
+
 
 
 
