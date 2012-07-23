@@ -62,12 +62,16 @@ def main():
 
   print 'saving datasets to disk...'
   for idx, ds in enumerate(datasets):
+    try:
       fn = os.path.expanduser("~/.scaleupbrazil/downloaded-data/" +
                               dataset_names[idx] + ".csv")
       datafile = open(fn, 'w')
       datafile.write(datasets[idx])
       datafile.close()
-
+    except:
+      print 'Error writing to file! Offending path: ', fn
+      sys.exit()
+      
   # update the last check date
   print 'updating date of last download'
   datefile = open(os.path.expanduser("~/.scaleupbrazil/lastdownload"), "w")
