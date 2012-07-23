@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 #####################################################################
 # job-status.py
@@ -24,12 +24,33 @@ from captools.api import Client
 from captricityTransfer import *
 
 def main():
+  parser = argparse.ArgumentParser(description='Check the status of Captricity jobs')
+  
+  parser.add_argument('-p', '--pattern', action="store",
+                      dest="name_pattern", default=None,
+                      help="only jobs whose name matches the given pattern")
+  parser.add_argument('-d', '--date', action="store",
+                      dest="since_date", default=None,
+                      help="only jobs that finished since the given date (YYYYMMDD)")
+  parser.add_argument('-c', '--completed', action="store_true",
+                      dest="only_complete", default=False,
+                      help="only jobs that have finished")
+  parser.add_argument('-i', '--incomplete', action="store_true",
+                      dest="only_incomplete", default=False,
+                      help="only jobs that have not finished")  
+
+  args = parser.parse_args()
+    
   api_token=get_token()
   client = Client(api_token)
 
   print 'Jobs:'
-  # see list-jobs-example.py in the captools examples
-  jobs = client.read_jobs()
+
+  jobs = get_jobs(client,
+                  since_date=args.since_date,
+                  only_complete=args.only_complete,
+                  only_incomplete=args.only_incomplete,
+                  name_pattern=args.name_pattern)
   for job in jobs:
       print job['name']
       print '\tstatus:', job['status']

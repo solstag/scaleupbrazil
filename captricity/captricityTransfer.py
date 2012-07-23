@@ -4,6 +4,38 @@ import re
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
+import time
+import dateutil.parser
+
+def get_jobs(client, since_date = None, name_pattern = None,
+             only_complete=False, only_incomplete=False):
+  """
+  get all of the jobs associated with an account; if necessary,
+  select only the jobs that have finished since since_date,
+  whose names match name_pattern, and/or which are complete.
+  """
+  jobs = client.read_jobs()
+
+  if name_pattern != None:
+    jobs = filter( lambda x: bool(re.search(name_pattern, x['name'])), jobs )
+
+  if since_date != None:
+    # TODO - eventually, check to see if since_date is already a datetime; for now,
+    # we'll assume it's a string
+    refdate = dateutil.parser.parse(since_date)
+
+    # NB: this relies on short-circuit evaluation of the and...
+    jobs = filter( lambda x: ((x['finished'] != None) and
+                              (dateutil.parser.parse(x['finished']) >  refdate)),
+                   jobs)
+  if only_complete == True:
+    jobs = filter( lambda x: x['finished'] != None, jobs )
+
+  if only_incomplete == True:
+    jobs = filter( lambda x: x['finished'] == None, jobs )
+
+  return jobs
+  
 
 def document_info(client):
   """Get information about all of the documents (templates) associated with

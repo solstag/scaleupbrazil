@@ -29,6 +29,7 @@ def main():
   api_token=get_token()
   client = Client(api_token)
 
-  
+  jobs = client.read_jobs()
+
 
 main()
