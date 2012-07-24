@@ -1,0 +1,49 @@
+Design notes for Captricity-related tools
+
+
+scan survey forms
+-----------------
+
+- scanning happens at FIOCRUZ
+- each day, the interviews that have been scanned are uploaded via web interface; they then show up
+  in a folder on lazersfeld, with one folder for each day. each scanned file's name identifies the
+  state and questionnaire id of the survey it contains
+
+
+upload
+------
+
+- go through the folders containing scanned files and figure out which ones have not yet been uploaded
+- prep the scanned forms by rotating, converting into new formats, etc as appropriate
+- for each interview to be uploaded, figure out which document/template it should be associated with
+- create a job for each document/template we're going to use, upload the appropriate surveys, and start the job
+
+
+download
+--------
+
+- figure out which jobs have finished and have not yet been downloaded
+- download all of the new interviews in .csv format (how should we organize downloaded interviews?)
+
+conflict detection
+------------------
+- for all of the surveys downloaded so far, figure out what discrepancies there are between the
+  vargas and captricity datasets
+- assemble those discrepancies in a file that can be used by the adjudication app
+- Q: how to handle --Impossible--, etc?
+
+adjudication
+------------
+- humans open up the adjudication app in a web browser
+- perhaps there is some overview (maybe not)
+- for each conflict that needs to be resolved, show the image from the scan, the vargas answer,
+  the captricity answer, and also a text field
+- once the adjudicated response has been obtained, store it in a resolution datafile
+
+updating final dataset
+----------------------
+- start with the vargas dataset as the final dataset
+- double-check that the resolution datafile has no duplicate resolutions
+- for each entry in the resolution datafile, update the final dataset
+
+

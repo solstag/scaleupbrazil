@@ -32,13 +32,13 @@ def main():
   client = Client(api_token)
 
   # figure out the last time we downloaded data
-  # TODO -- handle case where this file doesn't exist
   try:
     datefile = open(os.path.expanduser("~/.scaleupbrazil/lastdownload"))
     lastcheck = datefile.readline().strip()
     datefile.close()  
   except IOError:
     lastcheck = "20120101"
+    
   lastcheck = dateutil.parser.parse(lastcheck)
 
   print 'last download was on ', str(lastcheck)
