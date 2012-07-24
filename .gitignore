@@ -1,7 +1,9 @@
 *.py[co]
 
+# System and tmp files
 .DS_STORE
 *~
+*.swp
 
 # Packages
 *.egg
