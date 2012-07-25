@@ -7,9 +7,9 @@ The Captricity API token should be in a file in your home directory called:
 
 ~/.scaleupbrazil/captricity-token
 
-The scripts will look for the data under the directory:
+The scripts will look for the scanned survey forms under the directory:
 
-~/.scaleupbrazil/pngs
+~/.scaleupbrazil/scanned-forms
 
 Do not include scanned forms in the repository as it wouldn't be appropriate to release them to the public.
 

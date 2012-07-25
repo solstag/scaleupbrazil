@@ -114,7 +114,7 @@ def test_upload(client):
   
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
-                        os.path.expanduser("~/.scaleupbrazil/pngs"))
+                        os.path.expanduser("~/.scaleupbrazil/scanned-forms"))
 
   job = client.read_job(job['id']) #? this really necessary?
 
