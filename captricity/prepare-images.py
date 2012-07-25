@@ -50,7 +50,7 @@ def main():
   
   for bundle in filter( bundle_filter, pdfbundles):
     print 'Converting {}'.format(bundle)
-    retcode = call([ 'convert', '-rotate', '90', bundle, bundle[:-4]+'.png' ])
+    retcode = call([ 'convert', '-rotate', '90', '-density', '600', bundle, bundle[:-4]+'.png' ])
 
   print 'Done.'
 
