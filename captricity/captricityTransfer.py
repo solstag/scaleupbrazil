@@ -6,7 +6,7 @@ import time
 import dateutil.parser
 import datetime
 
-def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
+def get_template_map(template_file):
   """
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
   """
@@ -17,23 +17,45 @@ def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
 
   return res
 
-def get_survey_paths(svypath_file="~/.scaleupbrazil/survey-paths.csv"):
+def get_survey_paths(svypath_file):
   """
   read in the file that maps questionnaire IDs to the various templates that each questionnaire
   should use.
   """
 
-  ##infile = csv.DictReader(open(os.path.expanduser(svypath_file), 'r'))
-  infile = csv.reader(open(os.path.expanduser(svypath_file), 'r'))  
+  infile = csv.DictReader(open(os.path.expanduser(svypath_file), 'r'))  
   ## the .csv file's first column is the row number, which we don't need
-  svy_paths = [x[1:] for x in infile]
-  ## the first row of the .csv file
-  svy_paths_vars = {}
+  svy_paths = [x for x in infile]  
+  delblank = lambda x: x.pop('') and x
+  svy_paths = map(delblank, svy_paths)
 
-  for v, k in enumerate(svy_paths[0][1:]):
-    svy_paths_vars[k] = v
+  return svy_paths
 
-  return svy_paths, svy_paths_vars
+def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
+                            svypath_file="~/.scaleupbrazil/survey-paths.csv"):
+  """
+  read the list of questionnaire ids and skip patterns and decide which jobs should be started
+  in order to process the data they contain (allowing for skip patterns)
+  """
+
+  template_map = get_template_map(template_file)
+  svy_paths = get_survey_paths(svypath_file)
+
+  templates = {}
+
+  # go through each questionnaire and build up a dictionary which has
+  # as keys the template/document id and as values the questionnaire ids
+  # that should be used
+  for idx, q in enumerate(svy_paths):
+    for s in q.keys():
+      if s == 'id':
+        continue
+
+      this_template = template_map[s][q[s]]
+      if this_template != None:
+        templates.setdefault(this_template, []).append(q['id'])
+
+  return templates
 
 
 
