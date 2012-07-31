@@ -64,10 +64,36 @@ def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
 
       this_template = template_map[s][q[s]]
       if this_template != None:
-        templates.setdefault(this_template, []).append(q['id'])
+        templates.setdefault(this_template['document_id'], []).append(q['id'])
 
   return templates
 
+def create_questionnaire_jobs(client, templates, name_pattern=""):
+  """
+  given a dictionary whose keys are document/template ids and whose entries
+  are questionnaire numbers, create jobs and upload the appropriate files.
+  return the codes of the jobs
+  """
+
+  jobs = []
+
+  for doc in template.keys():
+
+    newjob = new_job(client, doc, name_pattern+doc)
+
+    ## TODO -- need to add code for uploading jpgs for this job here...    
+
+    jobs.append(newjob)
+
+  return(jobs)
+
+
+def start_questionnaire_jobs(job_ids):
+  """
+  given a list of job id numbers, go through and start the jobs
+  (this will cost money!)
+  """
+  pass
 
 
 def get_jobs(client, since_date = None, name_pattern = None,
