@@ -36,9 +36,8 @@ adjudication
 ------------
 - humans open up the adjudication app in a web browser
 - perhaps there is some overview (maybe not)
-- for each conflict that needs to be resolved, show the image from the scan, the vargas answer,
-  the captricity answer, and also a text field
-- once the adjudicated response has been obtained, store it in a resolution datafile
+- for each conflict that needs to be resolved, show the image from the scan, and a text field
+- once the adjudicated response has been obtained, store it in a resolution datafile. if it doesn't agree with either the vargas or the captricity answer, mark for further review
 
 updating final dataset
 ----------------------
@@ -49,3 +48,16 @@ updating final dataset
 IDs
 ---
 Each individual questionnaire can be uniquely identified by the combination of the two-digit state code and the five-digit questionnaire number. The questionnaire ID will be the state code and the questionnaire number separated by an underscore. For example, for questionnaire number 123 from the state with state code 11, the id would be 11_00123.
+
+config directory
+----------------
+At various points the scripts will look for the following things in the configuration directory, ~/.scaleupbrazil/
+
+* captricity-token : a file with the captricity API token
+* scanned-forms/ : a symlink to a directory with the location of the folders containing scanned pdf files
+* lastdownload : file with the timestamp of the last set of downloads from the captricity server
+* downloaded-data/ : a symlink to a directory with the location of the direcotry to use for downloaded data resulting
+  from captricity jobs
+* template-ids.json : a symlink to a file with entries mapping diffent paths through the survey to the corresponding template/document ids
+
+
