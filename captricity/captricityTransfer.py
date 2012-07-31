@@ -53,6 +53,7 @@ def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
       raise BaseException('No entries matching requested survey ids in the survey paths file.')
 
   templates = {}
+  template_page_lookup = {}
 
   # go through each questionnaire and build up a dictionary which has
   # as keys the template/document id and as values the questionnaire ids
@@ -65,10 +66,14 @@ def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
       this_template = template_map[s][q[s]]
       if this_template != None:
         templates.setdefault(this_template['document_id'], []).append(q['id'])
+        template_page_lookup[this_template['document_id']] = this_template['pages']
 
-  return templates
+  return templates, template_page_lookup
 
-def create_questionnaire_jobs(client, templates, name_pattern=""):
+def create_questionnaire_jobs(client, 
+                              templates, template_page_lookup, 
+                              image_path,
+                              name_pattern=""):
   """
   given a dictionary whose keys are document/template ids and whose entries
   are questionnaire numbers, create jobs and upload the appropriate files.
@@ -81,19 +86,26 @@ def create_questionnaire_jobs(client, templates, name_pattern=""):
 
     newjob = new_job(client, doc, name_pattern+doc)
 
-    ## TODO -- need to add code for uploading jpgs for this job here...    
-
     jobs.append(newjob)
+
+    upload_questionnaires(client, 
+                          newjob, 
+                          questionnaire_ids=template[doc], 
+                          pages=template_page_lookup[doc], 
+                          image_path=image_path)
 
   return(jobs)
 
 
-def start_questionnaire_jobs(job_ids):
+def start_questionnaire_jobs(client, job_ids):
   """
   given a list of job id numbers, go through and start the jobs
   (this will cost money!)
   """
-  pass
+
+  for job in job_ids:
+    print "launching job {}".format(job)
+    client.launch_job(job)
 
 
 def get_jobs(client, since_date = None, name_pattern = None,
@@ -164,32 +176,42 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   job = client.update_job(job['id'], put_data)
   return job
 
-def upload_questionnaires(client, job_id, questionnaire_ids, png_path):
+def upload_questionnaires(client, job_id, questionnaire_ids, pages=xrange(22), image_path):
   """
   Take a list of questionnaire IDs that should be uploaded, the id of the job that
   we  want to associate them with, and the path to the directory where they are
   stored.
-  For each questionnaire to upload, read the png files for all of its pages in,
+  For each questionnaire to upload, read the jpg files for all of its pages in,
   associate it with an image set, and upload them.
+
+  NB: this function assumes that the questionnaire filenames have the form
+       quest_QID-PGN.jpg
+  where QID is the questionnaire ID (eg: 28_00143), and
+        PGN is the page number (eg: 003)
   """
+
+  # page numbers from prepare-images.py have three digits (w/ leading 0s)
+  pages = ["{num:03d".format(num=int(z)) for z in pages]
 
   for qid in questionnaire_ids:
 
-    print "uploading questionnaire {}".format(qid)
+    print "uploading questionnaire {}, pages {}".format(qid, pages)
 
     # grab the filenames for all of the pages associated with this questionnaire
-    filenames = ["{}/quest_{}-{}.png".format(png_path, qid, x) for x in range(22)]
+    filenames = ["{}/quest_{}-{}.jpg".format(image_path, qid, x) for x in pages]
 
     # create an instance set to hold all of the page images for this questionnaire
     post_data = {'name' : qid}
     instance_set = client.create_instance_sets(job_id, post_data)
 
+    # this is a bit tricky: the page number of the instance set is not, in general,
+    # the same as the page number of the questionnaire (which is what the filename is based on)
     # fill the instance set in with the images for each page of the questionnaire
     for page_number, filename in enumerate(filenames):
       post_data = {'image' : open(filename),
-                   'image_name' : 'page {}'.format(page_number)}
+                   'image_name' : 'page {}'.format(pages[page_number])}
       client.create_iset_instance(instance_set['id'], page_number, post_data)
-      print "... page {}".format(page_number)
+      print "... page {} ({} of questionnaire)".format(page_number, pages[page_number])
     
   print "done."
 
@@ -203,8 +225,6 @@ def test_upload(client):
   upload_questionnaires(client, job['id'],
                         ['28_00143', '28_00140'],
                         os.path.expanduser("~/.scaleupbrazil/scanned-forms"))
-
-  job = client.read_job(job['id']) #? this really necessary?
 
   print 'finished uploading questionnaires...'
 
