@@ -1,12 +1,41 @@
-import sys
-import os
-import re
+import sys, os, re, json, csv
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 import time
 import dateutil.parser
 import datetime
+
+def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
+  """
+  read in the file that has the mapping from survey paths to the corresponding document/template IDs
+  """
+
+  infile = open(os.path.expanduser(template_file), 'r')
+  res = json.load(infile)
+  infile.close()
+
+  return res
+
+def get_survey_paths(svypath_file="~/.scaleupbrazil/survey-paths.csv"):
+  """
+  read in the file that maps questionnaire IDs to the various templates that each questionnaire
+  should use.
+  """
+
+  ##infile = csv.DictReader(open(os.path.expanduser(svypath_file), 'r'))
+  infile = csv.reader(open(os.path.expanduser(svypath_file), 'r'))  
+  ## the .csv file's first column is the row number, which we don't need
+  svy_paths = [x[1:] for x in infile]
+  ## the first row of the .csv file
+  svy_paths_vars = {}
+
+  for v, k in enumerate(svy_paths[0][1:]):
+    svy_paths_vars[k] = v
+
+  return svy_paths, svy_paths_vars
+
+
 
 def get_jobs(client, since_date = None, name_pattern = None,
              only_complete=False, only_incomplete=False):

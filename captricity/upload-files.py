@@ -16,9 +16,7 @@
 # also, the examples in the captools library are useful
 #
 
-import sys
-import os
-import re
+import sys, os, re, json
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
