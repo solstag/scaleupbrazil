@@ -37,6 +37,7 @@ def main():
     lastcheck = datefile.readline().strip()
     datefile.close()  
   except IOError:
+    print "Error reading last download date -- using default."
     lastcheck = "20120101"
     
   lastcheck = dateutil.parser.parse(lastcheck)
