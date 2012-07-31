@@ -48,4 +48,4 @@ updating final dataset
 
 IDs
 ---
-Each individual questionnaire can be uniquely identified by the combination of the two-digit state code and the five-digit questionnaire number. The questionnaire ID will be the state code and the questionnaire number separated by a dash. For example, for questionnaire number 123 from the state with state code 11, the id would be 11-00123.
+Each individual questionnaire can be uniquely identified by the combination of the two-digit state code and the five-digit questionnaire number. The questionnaire ID will be the state code and the questionnaire number separated by an underscore. For example, for questionnaire number 123 from the state with state code 11, the id would be 11_00123.
