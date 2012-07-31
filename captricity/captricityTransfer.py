@@ -32,14 +32,25 @@ def get_survey_paths(svypath_file):
   return svy_paths
 
 def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
-                            svypath_file="~/.scaleupbrazil/survey-paths.csv"):
+                            svypath_file="~/.scaleupbrazil/survey-paths.csv",
+                            questionnaire_id_list=None):
   """
   read the list of questionnaire ids and skip patterns and decide which jobs should be started
   in order to process the data they contain (allowing for skip patterns)
+
+  template_file - has the location of the file that describes the template/document ids
+  svypath_files - has the location of the file that maps questionnaire ids to different skip patterns
+  questionnaire_id_list - if specified, the list of questionnaires to look for (defaults to all of them)
   """
 
   template_map = get_template_map(template_file)
   svy_paths = get_survey_paths(svypath_file)
+
+  if questionnaire_id_list != None:
+    questionnaire_id_list = set(questionnaire_id_list)
+    svy_paths = filter(lambda x: x['id'] in questionnaire_id_list, svy_paths)
+    if len(svy_paths) == 0:
+      raise BaseException('No entries matching requested survey ids in the survey paths file.')
 
   templates = {}
 
