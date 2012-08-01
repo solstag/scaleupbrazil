@@ -24,7 +24,8 @@ def check_if_converted(bundle, imagelist, imagerange):
 
 def main():
 
-  parser = argparse.ArgumentParser(description='''Convert scanned PDF files into appropriately rotated JPEGs, which can be uploaded to Captricity for processing.
+  parser = argparse.ArgumentParser(description='''Convert scanned PDF files into appropriately rotated JPEGs, 
+    which can be uploaded to Captricity for processing.
     Support for TIFF files not yet fully tested!''')
   
   parser.add_argument('-p', '--pattern', action="store",
@@ -40,20 +41,23 @@ def main():
   args = parser.parse_args()
 
   listdir = os.listdir(os.path.expanduser(args.input_dir))
+  listoutdir = os.listdir(os.path.expanduser(args.output_dir))
+
   pdfbundles = filter( lambda x: x.endswith('.pdf'), listdir )
   tifbundles = filter( lambda x: x.endswith( ('.tif', '.tiff') ), listdir )
+
   if args.infile_pattern != None:
     pdfbundles = filter( lambda x: bool(re.search(args.infile_pattern, x)), pdfbundles )
     tifbundles = filter( lambda x: bool(re.search(args.infile_pattern, x)), tifbundles )
 
-  jpglist = filter( lambda x: x.endswith('.jpg'), listdir )
+  jpglist = filter( lambda x: x.endswith('.jpg'), listoutdir )
   
   if len(pdfbundles) == len(tifbundles) == 0 :
     print 'Nothing to be done, quitting.'
     return
   
   bundle_filter = lambda x: not check_if_converted( x, jpglist, xrange(imagesperfile)) 
-    
+
   for bundle in filter( bundle_filter, tifbundles):
     print 'Converting {}'.format(bundle)
     im=Image.open(args.input_dir + '/' + bundle)
@@ -82,6 +86,7 @@ def main():
                               args.output_dir+'/'+os.path.splitext(name)[0]+'.jpg' ])
 
   print 'Done.'
+  return 0
 
 main()
 

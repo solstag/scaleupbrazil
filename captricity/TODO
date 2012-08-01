@@ -1,5 +1,15 @@
 * Forking out (matt)
 
+micro
+-----
+* be sure that date/time stamps use UTC, not local time zones...
+* be sure we can use the API to get a shred
+
+
+macro
+-----
+* add exception handling throughout
+
 * Getting captricity to read forms
 ** Getting pdfs/tiffs to turn into png (ale)
 ** Upload images and start a job (dennis)
@@ -9,3 +19,4 @@
 * Get processed data from captricity
 
 * Resolve discrepancies between vargas and captricity
+

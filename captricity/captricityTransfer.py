@@ -5,6 +5,7 @@ from captools.api import Client
 import time
 import dateutil.parser
 import datetime
+from subprocess import call
 
 def get_template_map(template_file):
   """
@@ -121,8 +122,6 @@ def get_jobs(client, since_date = None, name_pattern = None,
     jobs = filter( lambda x: bool(re.search(name_pattern, x['name'])), jobs )
 
   if since_date != None:
-    # TODO - eventually, check to see if since_date is already a datetime; for now,
-    # we'll assume it's a string
     refdate = None
 
     if not isinstance(since_date, datetime.datetime):
@@ -176,7 +175,7 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   job = client.update_job(job['id'], put_data)
   return job
 
-def upload_questionnaires(client, job_id, questionnaire_ids, pages=xrange(22), image_path):
+def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=xrange(22)):
   """
   Take a list of questionnaire IDs that should be uploaded, the id of the job that
   we  want to associate them with, and the path to the directory where they are
@@ -215,17 +214,16 @@ def upload_questionnaires(client, job_id, questionnaire_ids, pages=xrange(22), i
     
   print "done."
 
-def test_upload(client):
-  # document_id = 1969 is the full survey
-  # document_id = 2319 is just a few fields
-  job = new_job(client, document_id=1969, job_name='small-api-test')
-  
-  print "created job with id {}".format(job['id'])
-  
-  upload_questionnaires(client, job['id'],
-                        ['28_00143', '28_00140'],
-                        os.path.expanduser("~/.scaleupbrazil/scanned-forms"))
+def questionnaires_in_dir(image_directory, pattern="(quest_)([\d|_]+)"):
+  files = os.listdir(os.path.expanduser(image_directory))
 
-  print 'finished uploading questionnaires...'
+  files = filter( lambda x: bool(re.search(pattern, x)), files )
+  files = set([ re.search(pattern,x).group(2) for x in files ])
 
-  return job['id']
+  return files
+
+
+
+
+
+
