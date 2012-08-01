@@ -27,10 +27,17 @@ def main():
 
   args = parser.parse_args()
 
+  if args.job_name is None or args.document_id is None:
+  	print "Error in arguments."
+  	sys.exit()
+
   api_token=get_token()
   client = Client(api_token)
 
+  newid = new_job(client, document_id=args.document_id,
+  	              job_name=args.job_name)
 
+  print "Created job with id", newid
 
 main()
 

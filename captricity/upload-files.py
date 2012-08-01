@@ -29,13 +29,13 @@ def test_upload(client, date):
   indir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/" + date)
   outdir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/jpgs/" + date)  
 
-  rv = call(['./prepare-images.py', '-p', 'quest', '-i', indir, '-o', outdir])
-
-  print "returned {}".format(rv)
-
+  #rv = call(['./prepare-images.py', '-p', 'quest', '-i', indir, '-o', outdir])
+  #print "returned {}".format(rv)
+  rv = 0
   if rv != 0:
-    pass
-    ## TODO -- exit with useful message
+    # TODO - eventually make this more elegant...
+    print "Error in image pre-processing"
+    sys.exit()
 
   # figure out which questionnaires are in the directory
   questionnaire_ids = questionnaires_in_dir(outdir)
@@ -44,16 +44,16 @@ def test_upload(client, date):
   templates, template_page_dict = prep_questionnaire_jobs(questionnaire_id_list=questionnaire_ids)
 
   # create the jobs
-  #jobs = create_questionnaire_jobs(client, templates, template_page_dict, 
-  #                                 out_dir, name_pattern="auto-job-{}-".format(str(today.date()))
+  jobs = create_questionnaire_jobs(client, templates, template_page_dict, 
+                                   outdir, 
+                                   name_pattern="auto-job-{}-".format(str(today.date())))
 
   # start the jobs (costs $$$!)
   #start_questionnaire_jobs(client, jobs)
 
   # TODO -- print more of a summary
-  print "done!"
+  print 'done...'
 
-  import pdb; pdb.set_trace()
 
 
 def old_test_upload(client):
@@ -74,8 +74,8 @@ def old_test_upload(client):
 
 
 def main():
-  #api_token=get_token()
-  #client = Client(api_token)
+  api_token=get_token()
+  client = Client(api_token)
 
   if 'info' in sys.argv:
     print 'Available methods:'
@@ -88,7 +88,6 @@ def main():
     #print docs_to_read
 
   if 'test' in sys.argv:
-    client = 'bananas'
     test_upload(client, "20120731")
 
 

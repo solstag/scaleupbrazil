@@ -61,3 +61,25 @@ At various points the scripts will look for the following things in the configur
 * template-ids.json : a symlink to a file with entries mapping diffent paths through the survey to the corresponding template/document ids
 * survey-paths.csv : a symlink to a .csv file which has the questionnaire ids and information about which skip patterns to use. we need this to pick the appropriate templates for each form
 
+data directories
+----------------
+* the tool for uploading scans will put the pdfs / tiffs into a directory RAWSCANS; the grab-daily-scans.py tool will read through those scans and put them into a directory based on the day's date
+
+* on the server, there will be a directory structure like
+
+brazil/
+  raw-scans/
+     * any unprocessed .pdfs will go in here
+  converted-pdfs/
+     20100731/
+     20100801/
+        -> copies of pdfs that were converted to jpgs on 20100801 will
+           go here
+  converted-jpgs/
+     20100731/
+     20100801/
+        -> jpg images of each page of the questionnaires converted  
+           from pdf on 2010 08 01 will go here; this is where
+           scripts that upload files to start the job will look
+
+

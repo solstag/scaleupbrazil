@@ -83,15 +83,15 @@ def create_questionnaire_jobs(client,
 
   jobs = []
 
-  for doc in template.keys():
+  for doc in templates.keys():
 
-    newjob = new_job(client, doc, name_pattern+doc)
+    newjob = new_job(client, doc, name_pattern+str(doc))
 
     jobs.append(newjob)
 
     upload_questionnaires(client, 
                           newjob, 
-                          questionnaire_ids=template[doc], 
+                          questionnaire_ids=templates[doc], 
                           pages=template_page_lookup[doc], 
                           image_path=image_path)
 
@@ -190,7 +190,7 @@ def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=x
   """
 
   # page numbers from prepare-images.py have three digits (w/ leading 0s)
-  pages = ["{num:03d".format(num=int(z)) for z in pages]
+  pages = ["{num:03d}".format(num=int(z)) for z in pages]
 
   for qid in questionnaire_ids:
 
