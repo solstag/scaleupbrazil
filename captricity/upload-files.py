@@ -22,7 +22,7 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
 
-def test_upload(client, date):
+def test_upload(client, date, jobname_prefix):
 
   today = datetime.datetime.now()
 
@@ -49,10 +49,10 @@ def test_upload(client, date):
 
   # create the jobs
   jobs = create_questionnaire_jobs(client, 
-                                   templates, 
-                                   template_page_dict, 
-                                   outdir, 
-                                   name_pattern="auto-job-{}-".format(str(today.date())))
+                                   tempate=templates, 
+                                   template_page_lookup=template_page_dict, 
+                                   image_path=outdir, 
+                                   name_pattern="{}-{}-".format(jobname_prefix, str(today.date())))
 
   # start the jobs (costs $$$!)
   #start_questionnaire_jobs(client, jobs)
@@ -76,7 +76,8 @@ def main():
     #print docs_to_read
 
   if 'test' in sys.argv:
-    test_upload(client, "20120731")
+    test_upload(client, "20120731",
+                jobname_prefix="apitest-job")
 
 main()
 

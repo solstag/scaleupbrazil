@@ -184,7 +184,8 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   job = client.update_job(job['id'], put_data)
   return job
 
-def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=xrange(22)):
+def upload_questionnaires(client, job_id, questionnaire_ids, 
+                          image_path, pages=xrange(22)):
   """
   Take a list of questionnaire IDs that should be uploaded, the id of the job that
   we  want to associate them with, and the path to the directory where they are
