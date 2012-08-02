@@ -26,15 +26,19 @@ def test_upload(client, date):
 
   today = datetime.datetime.now()
 
-  indir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/" + date)
-  outdir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/jpgs/" + date)  
+  indir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/raw-scans" + date)
+  outdir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/converted-jpgs/" + date)  
 
-  #rv = call(['./prepare-images.py', '-p', 'quest', '-i', indir, '-o', outdir])
-  #print "returned {}".format(rv)
-  rv = 0
+  # create output directory if it doesn't already exist
+  if not os.path.exists(outdir):
+    os.makedirs(outdir)
+
+  print 'Pre-processing scanned survey images...'
+  rv = call(['./prepare-images.py', '-p', 'quest', '-i', indir, '-o', outdir])
+
   if rv != 0:
     # TODO - eventually make this more elegant...
-    print "Error in image pre-processing"
+    print 'Error in image pre-processing'
     sys.exit()
 
   # figure out which questionnaires are in the directory
@@ -57,24 +61,6 @@ def test_upload(client, date):
   print 'done...'
 
 
-
-def old_test_upload(client):
-  """ old test upload fn"""
-  # document_id = 1969 is the full survey
-  # document_id = 2319 is just a few fields
-  job = new_job(client, document_id=1969, job_name='small-api-test')
-  
-  print "created job with id {}".format(job['id'])
-  
-  upload_questionnaires(client, job['id'],
-                        ['28_00143', '28_00140'],
-                        os.path.expanduser("~/.scaleupbrazil/scanned-forms"))
-
-  print 'finished uploading questionnaires...'
-
-  return job['id']
-
-
 def main():
   api_token=get_token()
   client = Client(api_token)
@@ -91,14 +77,6 @@ def main():
 
   if 'test' in sys.argv:
     test_upload(client, "20120731")
-
-
-
-    #job_id = test_upload(client)
-    # this step costs money!
-    #if 'money' in sys.argv:
-    #  client.launch_job(job_id)
-    #  print 'launched job...'
 
 main()
 

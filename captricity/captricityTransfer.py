@@ -12,6 +12,7 @@ def get_template_map(template_file):
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
   """
 
+  ## TODO-EXCEPTION
   infile = open(os.path.expanduser(template_file), 'r')
   res = json.load(infile)
   infile.close()
@@ -24,6 +25,7 @@ def get_survey_paths(svypath_file):
   should use.
   """
 
+  ## TODO-EXCEPTION
   infile = csv.DictReader(open(os.path.expanduser(svypath_file), 'r'))  
   ## the .csv file's first column is the row number, which we don't need
   svy_paths = [x for x in infile]  
@@ -64,6 +66,7 @@ def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
       if s == 'id':
         continue
 
+      # TODO-EXCEPTION
       this_template = template_map[s][q[s]]
       if this_template != None:
         templates.setdefault(this_template['document_id'], []).append(q['id'])
@@ -90,6 +93,7 @@ def create_questionnaire_jobs(client,
 
     jobs.append(newjob)
 
+    ## TODO-EXCEPTION
     upload_questionnaires(client, 
                           newjob['id'], 
                           questionnaire_ids=templates[doc], 
@@ -106,6 +110,9 @@ def start_questionnaire_jobs(client, job_ids):
   """
 
   for job in job_ids:
+    ## TODO-EXCEPTION: double-check that the job exists
+    ##   and is incomplete before launching...
+
     print "launching job {}".format(job)
     client.launch_job(job)
 
@@ -158,6 +165,7 @@ def get_token():
   """
   get the captricity API token from a file in the ~/.scaleupbrazil directory
   """
+  # TODO-EXCEPTION
   token_file = open(os.path.expanduser('~/.scaleupbrazil/captricity-token'))
   api_token = token_file.readlines()[0].strip()
   token_file.close()
@@ -169,7 +177,7 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   one or many scanned-in surveys (image sets).
   the default document_id, 1969, is the entire individual questionnaire
   """
-
+  # TODO-EXCEPTION - check document exists
   post_data = { 'document_id' : document_id }
   job = client.create_jobs(post_data)
   put_data = { 'name' : job_name }
@@ -190,6 +198,9 @@ def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=x
         PGN is the page number (eg: 003)
   """
 
+  # TODO-EXCEPTION
+  # check that job_id exists and is unfinished
+
   # page numbers from prepare-images.py have three digits (w/ leading 0s)
   pages = ["{num:03d}".format(num=int(z)) for z in pages]
 
@@ -201,6 +212,9 @@ def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=x
     # grab the filenames for all of the pages associated with this questionnaire
     filenames = ["{}/quest_{}-{}.jpg".format(image_path, qid, x) for x in pages]
 
+    # TODO-EXCEPTION
+    # check that the filenames exist/make sense, etc
+
     # create an instance set to hold all of the page images for this questionnaire
     post_data = {'name' : qid}
     instance_set = client.create_instance_sets(job_id, post_data)
@@ -211,6 +225,8 @@ def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=x
     for page_number, filename in enumerate(filenames):
       post_data = {'image' : open(filename),
                    'image_name' : 'page {}'.format(pages[page_number])}
+
+      # TODO-EXCEPTION - check for problems with POST
       client.create_iset_instance(instance_set['id'], page_number, post_data)
       print "... page {} ({} of questionnaire)".format(page_number, pages[page_number])
     
