@@ -27,8 +27,22 @@ from captricityTransfer import *
 import datetime
 import dateutil
 
+
 def main():
-  api_token=get_token()
+  api_token=get_token()  
+  client = Client(api_token)
+
+  out_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
+
+  res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
+
+  job_data_to_csv(res,
+                  out_dir)
+
+  print 'saved data to {}'.format(out_dir)
+
+def old_test():
+
   client = Client(api_token)
 
   # figure out the last time we downloaded data
