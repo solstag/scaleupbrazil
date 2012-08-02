@@ -49,7 +49,7 @@ def test_upload(client, date, jobname_prefix):
 
   # create the jobs
   jobs = create_questionnaire_jobs(client, 
-                                   template=templates, 
+                                   templates=templates, 
                                    template_page_lookup=template_page_dict, 
                                    image_path=outdir, 
                                    name_pattern="{}-{}-".format(jobname_prefix, str(today.date())))
@@ -76,7 +76,8 @@ def main():
     #print docs_to_read
 
   if 'test' in sys.argv:
-    test_upload(client, "20120731",
+    test_upload(client, 
+                "20120731",
                 jobname_prefix="apitest-job")
 
 main()

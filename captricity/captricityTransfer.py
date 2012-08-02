@@ -75,7 +75,8 @@ def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
   return templates, template_page_lookup
 
 def create_questionnaire_jobs(client, 
-                              templates, template_page_lookup, 
+                              templates, 
+                              template_page_lookup, 
                               image_path,
                               name_pattern=""):
   """
