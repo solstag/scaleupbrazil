@@ -4,7 +4,7 @@ micro
 -----
 * be sure that date/time stamps use UTC, not local time zones...
 * be sure we can use the API to get a shred
-
+* refine sibling templates into 15 (instead of 3) categories
 
 macro
 -----

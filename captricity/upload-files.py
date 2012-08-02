@@ -44,7 +44,9 @@ def test_upload(client, date):
   templates, template_page_dict = prep_questionnaire_jobs(questionnaire_id_list=questionnaire_ids)
 
   # create the jobs
-  jobs = create_questionnaire_jobs(client, templates, template_page_dict, 
+  jobs = create_questionnaire_jobs(client, 
+                                   templates, 
+                                   template_page_dict, 
                                    outdir, 
                                    name_pattern="auto-job-{}-".format(str(today.date())))
 

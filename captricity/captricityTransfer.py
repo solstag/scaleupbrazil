@@ -85,12 +85,13 @@ def create_questionnaire_jobs(client,
 
   for doc in templates.keys():
 
+    ## TODO-EXCEPTION check that document/template exists
     newjob = new_job(client, doc, name_pattern+str(doc))
 
     jobs.append(newjob)
 
     upload_questionnaires(client, 
-                          newjob, 
+                          newjob['id'], 
                           questionnaire_ids=templates[doc], 
                           pages=template_page_lookup[doc], 
                           image_path=image_path)
@@ -195,6 +196,7 @@ def upload_questionnaires(client, job_id, questionnaire_ids, image_path, pages=x
   for qid in questionnaire_ids:
 
     print "uploading questionnaire {}, pages {}".format(qid, pages)
+    print "target job id: {}".format(job_id)
 
     # grab the filenames for all of the pages associated with this questionnaire
     filenames = ["{}/quest_{}-{}.jpg".format(image_path, qid, x) for x in pages]
