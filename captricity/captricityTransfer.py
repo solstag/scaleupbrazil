@@ -181,6 +181,7 @@ def new_job (client, document_id = 1969, job_name="api-test-job"):
   # TODO-EXCEPTION - check document exists
   post_data = { 'document_id' : document_id }
   job = client.create_jobs(post_data)
+
   put_data = { 'name' : job_name }
   job = client.update_job(job['id'], put_data)
   return job

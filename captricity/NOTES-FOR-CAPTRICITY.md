@@ -13,7 +13,7 @@ This file will keep track of some of our comments about Captricity and the Captr
 
 * it would be useful to be able to encode skip patterns into the template, so that we don't get charged for trying to read fields which are structurally blank
 
-
+* it would be useful to be able to archive jobs, ie, to move them to a folder or something so that we didn't have to delete them, but they didn't always show up in the list on the job management page
 
 
 
