@@ -22,7 +22,7 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
 
-def test_upload(client, date, jobname_prefix):
+def test_upload(client, date, jobname_prefix, spend_money=False):
 
   today = datetime.datetime.now()
 
@@ -55,7 +55,8 @@ def test_upload(client, date, jobname_prefix):
                                    name_pattern="{}-{}-".format(jobname_prefix, str(today.date())))
 
   # start the jobs (costs $$$!)
-  #start_questionnaire_jobs(client, jobs)
+  if spend_money:
+    start_questionnaire_jobs(client, jobs)
 
   # TODO -- print more of a summary
   print 'done...'
@@ -75,10 +76,16 @@ def main():
     #docs_to_read = client.read_documents()
     #print docs_to_read
 
+  if 'money' in sys.argv:
+    spend_money = True
+  else:
+    spend_money = False
+
   if 'test' in sys.argv:
     test_upload(client, 
                 "20120731",
-                jobname_prefix="apitest-job")
+                jobname_prefix="apitest-job",
+                spend_money=spend_money)
 
 main()
 
