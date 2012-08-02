@@ -26,7 +26,7 @@ def test_upload(client, date, jobname_prefix):
 
   today = datetime.datetime.now()
 
-  indir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/raw-scans" + date)
+  indir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/raw-scans/" + date)
   outdir = os.path.expanduser("~/.scaleupbrazil/scanned-forms/converted-jpgs/" + date)  
 
   # create output directory if it doesn't already exist
@@ -49,7 +49,7 @@ def test_upload(client, date, jobname_prefix):
 
   # create the jobs
   jobs = create_questionnaire_jobs(client, 
-                                   tempate=templates, 
+                                   template=templates, 
                                    template_page_lookup=template_page_dict, 
                                    image_path=outdir, 
                                    name_pattern="{}-{}-".format(jobname_prefix, str(today.date())))
