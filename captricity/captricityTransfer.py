@@ -296,4 +296,41 @@ def job_data_to_csv(datasets, data_dir):
           print 'Error writing to file! Offending path: ', fn
           sys.exit()
 
+def get_job_shreds(client, job_id, out_dir):
+  """
+  retrieve shred objects (all except images) for a given job
+  """
+
+  shredlist = client.read_shreds(job_id)
+
+  # this yields a list of shred objects as a dict
+  # each shred object appears to have an entry called field, again a dict
+  # each field has 
+
+  #import pdb; pdb.set_trace()
+
+  # try saving the shred images
+  #shred_ids = [x['field']['id'] for x in shredlist]
+  shred_ids = [x['id'] for x in shredlist]  
+  #shred_ids = [x['uuid'] for x in shredlist]  
+
+  for this_shred_id in shred_ids:
+
+    print 'reading shred ', this_shred_id,
+    this_image = client.read_shred_image(this_shred_id)
+    print '...done'
+
+    fn = os.path.join(os.path.expanduser(out_dir),
+                          str(job_id) + "-" + str(this_shred_id) + ".png")
+    try:        
+      datafile = open(fn, 'wb')
+      datafile.write(this_image)
+      #datafile.write(client.read_shred_image(this_shred_id))      
+      datafile.close()
+    except Exception, err:
+      sys.stderr.write('ERROR: {}\n'.format(str(err)))
+      #print 'Error writing to file! Offending path: ', fn
+      sys.exit()    
+
+
 

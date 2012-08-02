@@ -32,14 +32,15 @@ def main():
   api_token=get_token()  
   client = Client(api_token)
 
-  out_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
+  out_data_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
+  out_shred_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/shred-test")  
 
-  res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
+  #res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
+  #job_data_to_csv(res, out_dir)
+  #print 'saved data to {}'.format(out_data_dir)
 
-  job_data_to_csv(res,
-                  out_dir)
+  res = get_job_shreds(client, 2592, out_shred_dir)
 
-  print 'saved data to {}'.format(out_dir)
 
 def old_test():
 
