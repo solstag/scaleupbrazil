@@ -104,18 +104,18 @@ def create_questionnaire_jobs(client,
   return(jobs)
 
 
-def start_questionnaire_jobs(client, job_ids):
+def start_questionnaire_jobs(client, jobs):
   """
   given a list of job id numbers, go through and start the jobs
   (this will cost money!)
   """
 
-  for job in job_ids:
+  for job in jobs:
     ## TODO-EXCEPTION: double-check that the job exists
     ##   and is incomplete before launching...
 
-    print "launching job {}".format(job)
-    client.launch_job(job)
+    print "launching job {} (id: {})".format(job['name'], job['id'])
+    client.launch_job(job['id'])
 
 
 def get_jobs(client, since_date = None, name_pattern = None,
