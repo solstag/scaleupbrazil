@@ -26,6 +26,9 @@ from captools.api import Client
 from captricityTransfer import *
 import datetime
 import dateutil
+import requests
+from PIL import Image 
+from StringIO import StringIO
 
 
 def main():
@@ -35,12 +38,11 @@ def main():
   out_data_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
   out_shred_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/shred-test")  
 
-  #res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
-  #job_data_to_csv(res, out_dir)
-  #print 'saved data to {}'.format(out_data_dir)
+  res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
+  job_data_to_csv(res, out_dir)
+  print 'saved data to {}'.format(out_data_dir)
 
   res = get_job_shreds(client, 2592, out_shred_dir)
-
 
 def old_test():
 

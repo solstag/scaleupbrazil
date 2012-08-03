@@ -1,10 +1,8 @@
-import sys, os, re, json, csv
+import sys, os, re, json, csv, requests
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
-import time
-import dateutil.parser
-import datetime
+import time, datetime, dateutil.parser
 from subprocess import call
 
 def get_template_map(template_file):
@@ -296,6 +294,19 @@ def job_data_to_csv(datasets, data_dir):
           print 'Error writing to file! Offending path: ', fn
           sys.exit()
 
+def get_single_shred_image(client, shred_id):
+  """
+  return the data associated with a shred image based on the shred id
+  """
+
+  base_url = 'https://shreddr.captricity.com/api/shreddr/shred/{id}/image'
+  req_url = base_url.format(id=shred_id)
+
+  r = requests.get(req_url, headers={'X_API_TOKEN' : str(client.api_token),
+                                     'X_API_VERSION' : '0.1'})
+
+  return r.content
+
 def get_job_shreds(client, job_id, out_dir):
   """
   retrieve shred objects (all except images) for a given job
@@ -317,15 +328,18 @@ def get_job_shreds(client, job_id, out_dir):
   for this_shred_id in shred_ids:
 
     print 'reading shred ', this_shred_id,
-    this_image = client.read_shred_image(this_shred_id)
+    # NB: Client.read_shred_image is not working right now
+    #     (df corresponded with support@captricity.com about this)
+    #     as a workaround, wrote the get_single_shred_image fn
+    #this_image = client.read_shred_image(this_shred_id)
+    this_image = get_single_shred_image(client, this_shred_id)
     print '...done'
 
     fn = os.path.join(os.path.expanduser(out_dir),
-                          str(job_id) + "-" + str(this_shred_id) + ".png")
+                          str(job_id) + "-" + str(this_shred_id) + ".jpg")
     try:        
       datafile = open(fn, 'wb')
       datafile.write(this_image)
-      #datafile.write(client.read_shred_image(this_shred_id))      
       datafile.close()
     except Exception, err:
       sys.stderr.write('ERROR: {}\n'.format(str(err)))
