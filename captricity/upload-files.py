@@ -85,7 +85,7 @@ def main():
   if 'test' in sys.argv:
     test_upload(client, 
                 "20120731",
-                jobname_prefix="apitest-job",
+                jobname_prefix="apitest2-job",
                 spend_money=spend_money)
 
 main()
