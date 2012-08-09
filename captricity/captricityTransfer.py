@@ -1,4 +1,6 @@
-import sys, os, re, json, csv, requests
+#!/usr/bin/env python
+
+import sys, os, re, json, csv, requests, pickle
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
@@ -115,6 +117,144 @@ def start_questionnaire_jobs(client, jobs):
     print "launching job {} (id: {})".format(job['name'], job['id'])
     client.launch_job(job['id'])
 
+def get_qid_maps(client, job_ids = None):
+  """
+  given a list of job ids this function
+  returns qid_job_map, iset_qid_map
+
+  where
+
+  qid_job_map - a dictionary which maps questionnaire ids to jobs
+  iset_qid_map - a dictionary which maps instance set ids to questionnaire ids
+
+  if no job ids are passed in, use all of the client's jobs  
+
+  this assumes that the instance sets' names are the questionnaire ids
+  eg, 12_34567
+  """
+
+  if job_ids is None:
+
+    jobs = get_jobs(client)
+    job_ids = [x['id'] for x in jobs]
+
+  qid_job_map = {}
+  iset_qid_map = {}
+
+  for job_id in job_ids:
+
+    isets = client.read_instance_sets(job_id)
+
+    iset_ids = [x['id'] for x in isets]
+    qids = [x['name'] for x in isets]
+
+    for this_iset_id, this_qid in zip(iset_ids, qids):
+      
+      iset_qid_map[this_iset_id] = this_qid
+
+      qid_job_map.setdefault(this_qid, [])
+      qid_job_map[this_qid].append(job_id)
+
+  return qid_job_map, iset_qid_map
+
+def get_iset_maps(client, job_ids = None):
+  """
+  given a list of job ids, this function
+  returns a dictionary from instance set ids to a dictionary whose entries have shred ids and variable names
+  """
+
+  if job_ids is None:
+    jobs = get_jobs(client)
+    job_ids = [x['id'] for x in jobs]
+
+  iset_shred_map = {}
+
+  # it takes forever to keep reading instances,
+  # so we'll avoid grabbing them from the server more than once
+  instance_stash = {}
+
+  for this_job in job_ids:
+
+    print 'getting instance sets for job ', this_job, '...',
+
+    shreds = client.read_shreds(this_job)
+    shred_ids = [x['id'] for x in shreds]
+    shred_varnames = [x['field']['name'] for x in shreds]
+
+    print 'read shreds...',
+
+    instance_ids = [x['registered_instance']['instance_id'] for x in shreds]
+
+    for iid in instance_ids:
+      if not iid in instance_stash.keys():
+        instance_stash[iid] = client.read_instance(iid)['instance_set_id']
+
+    print 'done reading instances'
+
+    iset_ids = [instance_stash[iid] for iid in instance_ids ]
+
+    [iset_shred_map.setdefault(x,{}) for x in iset_ids]
+
+    for this_iset_id, this_shred_id, this_shred_name in zip(iset_ids, shred_ids, shred_varnames):
+      iset_shred_map[this_iset_id][this_shred_name] = this_shred_id
+
+  return iset_shred_map
+
+def get_qid_shred_map(iset_shred_map, iset_qid_map):
+  """
+  given maps from instance set ids to list of shreds and from
+  instance set ids to questionnaire ids, return
+  a map from questionnaire ids to a list of shreds
+  """
+
+  qid_shred_map = {}
+
+  for this_iset_id, this_qid in iset_qid_map.iteritems():
+
+    qid_shred_map.setdefault(this_qid, {})
+
+    #import pdb; pdb.set_trace()
+
+    # TODO -- add warning or error if iset_shred_map doens't have this image set
+    qid_shred_map[this_qid].update(iset_shred_map[this_iset_id])
+
+  return qid_shred_map
+
+def create_useful_maps(client, name_pattern="apitest-job", cache_file="~/.scaleupbrazil/useful-maps"):
+
+  relevant_jobs = get_jobs(client, name_pattern=name_pattern)
+  job_ids = [j['id'] for j in relevant_jobs]
+
+  print 'getting qid maps...'
+  qid_job, iset_qid = get_qid_maps(client, job_ids)
+
+  print 'getting iset maps...'
+  iset_shred = get_iset_maps(client, job_ids)
+
+  qid_shred = get_qid_shred_map(iset_shred, iset_qid)
+
+  if cache_file:
+    outfile = open(os.path.expanduser(cache_file), 'wb')
+    pickle.dump(qid_job, outfile, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(iset_qid, outfile, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(iset_shred, outfile, pickle.HIGHEST_PROTOCOL)
+    pickle.dump(qid_shred, outfile, pickle.HIGHEST_PROTOCOL)
+    outfile.close()
+
+  return qid_job, iset_qid, iset_shred, qid_shred
+
+# qid_job, iset_qid, iset_shred, qid_shred = create_useful_maps(client)  
+
+def load_useful_maps(cache_file="~/.scaleupbrazil/useful-maps"):
+
+  infile = open(os.path.expanduser(cache_file), "rb")
+  qid_job = pickle.load(infile)
+  iset_qid = pickle.load(infile)
+  iset_shred = pickle.load(infile)
+  qid_shred = pickle.load(infile)
+  infile.close()
+
+  return qid_job, iset_qid, iset_shred, qid_shred
 
 def get_jobs(client, since_date = None, name_pattern = None,
              only_complete=False, only_incomplete=False):
@@ -307,23 +447,22 @@ def get_single_shred_image(client, shred_id):
 
   return r.content
 
-def get_job_shreds(client, job_id, out_dir):
+def get_job_shreds(client, job_id, out_dir, download_images=True):
   """
   retrieve shred objects (all except images) for a given job
   """
 
   shredlist = client.read_shreds(job_id)
 
+  if download_images == False:
+    return shredlist
+
   # this yields a list of shred objects as a dict
   # each shred object appears to have an entry called field, again a dict
   # each field has 
 
-  #import pdb; pdb.set_trace()
-
-  # try saving the shred images
-  #shred_ids = [x['field']['id'] for x in shredlist]
+  # save the shred images
   shred_ids = [x['id'] for x in shredlist]  
-  #shred_ids = [x['uuid'] for x in shredlist]  
 
   for this_shred_id in shred_ids:
 
@@ -343,8 +482,7 @@ def get_job_shreds(client, job_id, out_dir):
       datafile.close()
     except Exception, err:
       sys.stderr.write('ERROR: {}\n'.format(str(err)))
-      #print 'Error writing to file! Offending path: ', fn
       sys.exit()    
 
-
+  return shredlist
 
