@@ -38,11 +38,14 @@ def main():
   out_data_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
   out_shred_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/shred-test")  
 
-  res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
-  job_data_to_csv(res, out_dir)
-  print 'saved data to {}'.format(out_data_dir)
+  #res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
+  #job_data_to_csv(res, out_dir)
+  #print 'saved data to {}'.format(out_data_dir)
 
-  res = get_job_shreds(client, 2592, out_shred_dir)
+  joblist = get_jobs(client, name_pattern="apitest-job")
+  shredlist = get_job_shreds(client, 2592, out_shred_dir, download_images=False)
+
+  import pdb; pdb.set_trace()
 
 def old_test():
 
