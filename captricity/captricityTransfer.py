@@ -221,6 +221,21 @@ def get_qid_shred_map(iset_shred_map, iset_qid_map):
   return qid_shred_map
 
 def create_useful_maps(client, name_pattern="apitest-job", cache_file="~/.scaleupbrazil/useful-maps"):
+  """
+  create a few data structures which are useful in relating Captricity resources to 
+  substantive things we are interested in. cache these data structures in a file so
+  that we don't have to continually ping the api. it takes a while to generate some
+  of these data structures because we have to get some of them from the api rather indirectly
+
+  this returns:
+     qid_job - a map from questionnaire's id to the job ids that were run to process it
+     iset_qid - maps instance set ids to the questionnaire they came from
+     iset_shred - maps instance set ids to the list of shreds they produced
+     qid_shred - maps questionnaires to all of the shreds that they produced
+  """
+
+  # TODO -- eventually, we might want to keep this info in the
+  # database, instead of in memory / cached files
 
   relevant_jobs = get_jobs(client, name_pattern=name_pattern)
   job_ids = [j['id'] for j in relevant_jobs]
@@ -246,6 +261,10 @@ def create_useful_maps(client, name_pattern="apitest-job", cache_file="~/.scaleu
 # qid_job, iset_qid, iset_shred, qid_shred = create_useful_maps(client)  
 
 def load_useful_maps(cache_file="~/.scaleupbrazil/useful-maps"):
+  """
+  load locally cached versions of the useful maps that were created by
+  create_useful_maps. see that fn for what maps are produced
+  """
 
   infile = open(os.path.expanduser(cache_file), "rb")
   qid_job = pickle.load(infile)
