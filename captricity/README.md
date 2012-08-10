@@ -13,6 +13,22 @@ The scripts will look for the scanned survey forms under the directory:
 
 Do not include scanned forms in the repository as it wouldn't be appropriate to release them to the public.
 
+The JSON document which describes different possible paths through the survey (due, for example, to skip patterns), should be in
+
+~/.scaleupbrazil/template-ids.json
+
+The root directory for scanned survey forms, and where intermediate .jpg images will be created, is (probably a symlink)
+
+~/.scaleupbrazil/scanned-forms
+
+Datasets that get downloaded will be stored in the directory 
+
+~/.scaleupbrazil/downloaded-data
+
+Information about the database to use should be in 
+
+[TODO -- WORKING ON THIS]
+
 Software requirements
 ---------------------
 
