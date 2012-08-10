@@ -10,7 +10,7 @@ from captools.api import Client
 import time, datetime, dateutil.parser
 from subprocess import call
 import pymongo
-import bson.binary
+from bson.binary import Binary
 from pymongo import Connection
 from captricityTransfer import *
 
@@ -43,7 +43,7 @@ def insert_shreds_from_jobs(client, db, job_ids):
 			this_image = get_single_shred_image(client, this_shred_id)
 
 			db.shred_images.insert({ 'shred_id' : this_shred_id,
-			                         'image_data' : pymongo.binary.Binary(this_image) })
+			                         'image_data' : Binary(this_image) })
 		print '\ndone!'
 
 
