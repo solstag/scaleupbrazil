@@ -56,8 +56,7 @@ def test_upload(client, date, jobname_prefix, spend_money=False):
 
   # start the jobs (costs $$$!)
   if spend_money:
-    print 'spending money turned off for the time being...'
-    #start_questionnaire_jobs(client, jobs)
+    start_questionnaire_jobs(client, jobs)
 
   # TODO -- print more of a summary
   print 'done...'
