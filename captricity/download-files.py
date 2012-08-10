@@ -24,6 +24,7 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
+from captricityDatabase import *
 import datetime
 import dateutil
 import requests
@@ -38,14 +39,22 @@ def main():
   out_data_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/")
   out_shred_dir = os.path.expanduser("~/.scaleupbrazil/downloaded-data/shred-test")  
 
-  #res = download_job_data(client, [2592, 2593, 2594, 2595, 2596])
-  #job_data_to_csv(res, out_dir)
-  #print 'saved data to {}'.format(out_data_dir)
+  job_name_pattern = "apitest2-job"
 
-  joblist = get_jobs(client, name_pattern="apitest-job")
-  shredlist = get_job_shreds(client, 2592, out_shred_dir, download_images=False)
+  jobs = get_jobs(client, name_pattern=job_name_pattern)
+  job_ids = [x['id'] for x in jobs]
 
-  import pdb; pdb.set_trace()
+  res = download_job_data(client, job_ids)
+  job_data_to_csv(res, out_data_dir)
+  print 'saved data to {}'.format(out_data_dir)
+
+  #joblist = get_jobs(client, name_pattern="apitest-job")
+  #shredlist = get_job_shreds(client, 2592, out_shred_dir, download_images=False)
+
+  db = connect_to_database()
+  insert_shreds_from_jobs(client, db, job_ids)
+
+  #import pdb; pdb.set_trace()
 
 def old_test():
 

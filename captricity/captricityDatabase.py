@@ -9,10 +9,9 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 import time, datetime, dateutil.parser
 from subprocess import call
-import pymongo
+import pymongo, pymongo.binary
 from pymongo import Connection
 from captricityTransfer import *
-
 
 def connect_to_database():
 	"""
@@ -20,6 +19,32 @@ def connect_to_database():
 	"""
 
 	return Connection().captools
+
+def insert_shreds_from_jobs(client, db, job_ids):
+	"""
+	given a list of job_ids, get all of the shreds associated with those jobs and
+	insert them in the database
+
+	TODO-DB / NOTE: this might be faster if we change to use bulk inserts
+	"""
+
+	print 'slurping shreds...'
+
+	for job_id in job_ids:
+		print 'starting job', job_id
+
+		# TODO -- eventually, make get_job_shreds() handle this...
+		shreds = client.read_shreds(job_id)
+
+		for shred in shreds:
+			this_shred_id = shred['id']
+			print this_shred_id, ',',
+			this_image = get_single_shred_image(client, this_shred_id)
+
+			db.shred_images.insert({ 'shred_id' : this_shred_id,
+			                         'image_data' : pymongo.binary.Binary(this_image) })
+		print '\ndone!'
+
 
 def insert_diffs(db, diff_data):
   """

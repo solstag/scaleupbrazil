@@ -69,8 +69,9 @@ class shred_test:
 class shred_image: 
     def GET(self, shred_id): 
 
-        web.header("Content-Type", "images/jpeg")
-        res = db.testimage.find_one({'id' : shred_id})
+        #web.header("Content-Type", "images/jpeg")
+        web.header("Content-Type", "images/png")
+        res = db.shred_images.find_one({'shred_id' : int(shred_id)})
 
         return res['image_data']
 
