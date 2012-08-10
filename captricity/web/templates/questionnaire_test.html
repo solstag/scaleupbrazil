@@ -1,0 +1,8 @@
+$def with (qid, shreds_info)
+
+
+
+<h1> questionnaire $qid </h1>
+
+$for si in shreds_info:
+	$si[0]: <img src="/adju/shred/$si[1]" /><br>
