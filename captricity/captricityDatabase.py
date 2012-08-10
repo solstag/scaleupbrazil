@@ -9,7 +9,8 @@ from captools.api import ThirdPartyApplication
 from captools.api import Client
 import time, datetime, dateutil.parser
 from subprocess import call
-import pymongo, pymongo.binary
+import pymongo
+import bson.binary
 from pymongo import Connection
 from captricityTransfer import *
 

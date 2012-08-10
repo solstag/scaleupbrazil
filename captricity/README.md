@@ -50,3 +50,9 @@ http://imagemagick.org/
 
 http://poppler.freedesktop.org/
 
+* 'pymongo' for interacting with MongoDB
+
+$ sudo pip install pymongo
+
+
+
