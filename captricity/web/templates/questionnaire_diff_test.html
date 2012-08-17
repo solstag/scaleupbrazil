@@ -1,0 +1,14 @@
+$def with (qid, diff_form, shred_image_ids)
+
+
+
+<h1> questionnaire $qid </h1>
+
+<table rules="rows">
+$for si in shred_image_ids:
+	<tr><td>$qid<br>$si[0] </td>
+		<td><img src="/adju/shred/$si[1]" /></td>
+	    <td>$:diff_form.render()</td></tr>
+</table>
+
+

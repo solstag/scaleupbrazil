@@ -13,6 +13,7 @@ import sys, pymongo
 sys.path.append(os.getcwd() + "/../")
 
 import captricityTransfer as ct
+import captricityDatabase as cd
 
 db = pymongo.Connection().captools
 
@@ -20,9 +21,19 @@ render = web.template.render('templates/')
 
 urls = ('/', 'index',
         '/adju/(\d{2}_\d{5})', 'questionnaire_id',
+        '/adju/diffs/(\d{2}_\d{5})', 'questionnaire_diffs',        
         '/adju/(\d{7}\d*)', 'shred_test',
         '/adju/shred/(\d{7}\d*)', 'shred_image')
 app = web.application(urls, globals())
+
+# this is the form object for a single diff which
+# the user will resolve
+diff_form = form.Form(
+            form.Textbox("ajdu_value", description="value"),
+            form.Checkbox(name='blank', checked=False),
+            form.Checkbox(name='unreadable', checked=False),
+            form.Checkbox(name='very distorted', checked=False)
+            )
 
 
 ## NB: we may eventually want this to poll the API to get updated
@@ -59,6 +70,22 @@ class questionnaire_id:
         return render.questionnaire_test(questionnaire_id, 
                                          zip(shreds.keys(), 
                                              shreds.values()))
+
+class questionnaire_diffs: 
+    def GET(self, questionnaire_id): 
+
+        # grab the diffs for this questionnaire
+        diffs = cd.get_questionnaire_diffs(db, questionnaire_id)
+
+        diff_shred_qs = [x['var'] for x in diffs]
+        diff_shred_ids = [x['shred_image_id'] for x in diffs]
+
+        df = diff_form()
+
+        return render.questionnaire_diff_test(questionnaire_id,
+                                              df,
+                                              zip(diff_shred_qs,
+                                                  diff_shred_ids))
 
 class shred_test: 
     def GET(self, shred_id): 
