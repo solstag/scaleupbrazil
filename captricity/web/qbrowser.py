@@ -31,13 +31,9 @@ qid_job, iset_qid, iset_shred, qid_shred = ct.load_useful_maps()
 available_qids = qid_shred.keys()
 
 class index: 
-    pass
-#     uploadform = form.Form( 
-#         form.Dropdown(name='Questionario', args=quests, value=defaultquest),
-#         form.File(name='Arquivo'))
-#     def GET(self): 
-#         form = self.uploadform()
-#         return render.uploadscans(form)
+    def GET(self): 
+        form = self.uploadform()
+        return render.uploadscans(form)
 
 #     def POST(self): 
 #         form = self.uploadform() 
@@ -60,7 +56,9 @@ class questionnaire_id:
         # grab the shreds for this questionnaire
         shreds = qid_shred[questionnaire_id]
 
-        return render.questionnaire_test(questionnaire_id, zip(shreds.keys(), shreds.values()))
+        return render.questionnaire_test(questionnaire_id, 
+                                         zip(shreds.keys(), 
+                                             shreds.values()))
 
 class shred_test: 
     def GET(self, shred_id): 

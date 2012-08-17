@@ -34,6 +34,23 @@ def get_survey_paths(svypath_file):
 
   return svy_paths
 
+def get_diffs(diff_file):
+  """
+  read in the file which has information about the differences between the
+  captricity and vargas results
+  """
+
+  ## TODO-EXCEPTION
+  infile = csv.DictReader(open(os.path.expanduser(diff_file), 'r'))
+
+  res = []
+
+  for row in infile:
+    res.append(row)
+
+  return res
+
+
 def prep_questionnaire_jobs(template_file="~/.scaleupbrazil/template-ids.json",
                             svypath_file="~/.scaleupbrazil/survey-paths.csv",
                             questionnaire_id_list=None):
@@ -307,6 +324,20 @@ def get_jobs(client, since_date = None, name_pattern = None,
 
   return jobs
   
+def load_var_maps(varfile="~/.scaleupbrazil/varname-map.json"):
+  """
+  load the JSON file which maps the variable names we use in our code
+  to the internal variable names Captricity uses
+  """
+
+  ## TODO-EXCEPTION
+  infile = open(os.path.expanduser(varfile), 'r')
+  res = json.load(infile)
+  infile.close()
+
+  return res
+
+
 
 def document_info(client):
   """Get information about all of the documents (templates) associated with

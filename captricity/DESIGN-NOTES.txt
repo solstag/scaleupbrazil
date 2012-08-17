@@ -60,6 +60,9 @@ At various points the scripts will look for the following things in the configur
   from captricity jobs
 * template-ids.json : a symlink to a file with entries mapping diffent paths through the survey to the corresponding template/document ids
 * survey-paths.csv : a symlink to a .csv file which has the questionnaire ids and information about which skip patterns to use. we need this to pick the appropriate templates for each form
+* captricity-vargas-diffs.csv : a symlink to a .csv file which has the questionnaire ids and variable names of items where
+  captricity and vargas produced different answers. this file should be cumulative (ie, it should have all questions where
+  there was ever a diff, rather than all questions with unresolved diffs)
 
 data directories
 ----------------
@@ -81,5 +84,14 @@ brazil/
         -> jpg images of each page of the questionnaires converted  
            from pdf on 2010 08 01 will go here; this is where
            scripts that upload files to start the job will look
+  downloaded-data/
+      20100731/
+      20100801/
+        -> csv files with the data downloaded from jobs that finished on this date
+           (TODO? - or, should it be jobs that were started on this date, so that they
+            are the same as the upload directories?)
+
+
+
 
 

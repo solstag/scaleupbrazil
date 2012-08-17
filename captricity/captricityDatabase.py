@@ -43,64 +43,105 @@ def insert_shreds_from_jobs(client, db, job_ids):
 			this_image = get_single_shred_image(client, this_shred_id)
 
 			db.shred_images.insert({ 'shred_id' : this_shred_id,
-			                         'image_data' : Binary(this_image) })
+															 'image_data' : Binary(this_image) })
 		print '\ndone!'
 
 
 def insert_diffs(db, diff_data):
-  """
-  take a list of the form [ (questionnaire_id, variable_name), ..., (qid, vname)]
-  whose entries are questionnaire items where captricity and vargas produced different
-  values. insert this list into the database.
-  """
+	"""
+	take a list of dictionaries of the form 
+	[ {'name' : '<questionnaire id>', 'variable' : '<variable name>', ... },
+		...,
+		{'name' : '<questionnaire id>', 'variable' : '<variable name>', ...} ]
 
-  # upsert questionnaire id and variable number for everything; if we overwrite
-  # old ones, that's fine -- these should never change
+	whose entries are questionnaire items where captricity and vargas produced different
+	values. insert this list into the database, ensuring that we don't re-insert a diff
+	that is already there
+	"""
 
-  for qid, vnum in diff_data:
-  	print 'going to try to insert quest num ', qid, 'and variable', vnum
+	# upsert questionnaire id and variable number for everything; if we overwrite
+	# old ones, that's fine -- these should never change
+	#import pdb; pdb.set_trace()
 
-  	# TODO -- need to add other fields
-  	#    
-  	basic_entry = { "$set" : {"questionnaire_id" : qid,
-  	         	              "var" : vnum} }
+	for thisdiff in diff_data:
 
-  	db.item_diffs.update({"questionnaire_id" : qid,
-  		                  "var" : vnum },
-  		      			 basic_entry,
-  		      			 upsert = True)
+		qid = thisdiff['name']
+		vnum = thisdiff['variable']
+		print 'going to try to insert quest num ', qid, 'and variable', vnum
 
-  # now all of the questionnaire_id / var values are in the database,
-  # but some will already have all of their info filled out, and some
-  # (which are new) will not. the new ones will not having anything in
-  # their status field, so we'll search based on that
-  newdiffs = db.item_diffs.find({ "status" : {"$exists" : False }})
+		# TODO -- need to add other fields
+		#    
+		basic_entry = { "$set" : {"questionnaire_id" : qid,
+														"var" : vnum} }
 
-  # TODO -- eventually, we should figure out when to load the locally cached versions,
-  # and when to re-ping the API
-  qid_job, iset_qid, iset_shred, qid_shred = load_useful_maps()
+		db.item_diffs.update({"questionnaire_id" : qid,
+												"var" : vnum },
+									 basic_entry,
+									 upsert = True)
 
-  if newdiffs:
+	# now all of the questionnaire_id / var values are in the database,
+	# but some will already have all of their info filled out, and some
+	# (which are new) will not. the new ones will not having anything in
+	# their status field, so we'll search based on that
+	newdiffs = db.item_diffs.find({ "status" : {"$exists" : False }})
 
-  	now = datetime.datetime.now()
+	# TODO -- eventually, we should figure out when to load the locally cached versions,
+	# and when to re-ping the API
+	qid_job, iset_qid, iset_shred, qid_shred = load_useful_maps()
+	vmap = load_var_maps()
 
-  	# TODO -- here, for each new diff, we need to fill in
-  	# date_added, last_updated, job_id, shred_image_id, and status
-  	for newdiff in newdiffs:
+	if newdiffs:
 
-  		this_shred_id = qid_shred[newdiff['questionnaire_id']][newdiff['var']]
+		now = datetime.datetime.now()
 
-  		db.item_diffs.update( { "questionnaire_id" : newdiff['questionnaire_id'],
-  			                    "var" : newdiff['var'] },
-  			                  { "$set" : {
-  			                  		"date_added" : now,
-  			                  		"last_updated" : now,
-  			                  		"shred_image_id" : this_shred_id,
-  			                  		"status" : "unexamined"
-  			                  }} )
+		# TODO -- here, for each new diff, we need to fill in
+		# date_added, last_updated, job_id, shred_image_id, and status
+		for newdiff in newdiffs:
+
+			#import pdb; pdb.set_trace()
+			new_qid = newdiff['questionnaire_id']
+			new_var = newdiff['var']
+
+			#import pdb; pdb.set_trace()
+			## TODO -- LEFT OFF HERE:
+			##   need to finish mapping Captricity names to
+			##   our variable names
+			##   we've got the groundwork; trick is now to incorporate changes
+			##   that happen after line 83 of captricity-vargas-makediffs.r
+			##   eg, when we collapse the hour/min vars to one
+			##   (right now, failing on 'q109_month')
+			##   ALSO / RELATED: need to handle case
+			##   where there are multiple shreds to show per diff
+			##   (eg hh:mm questions)
+
+			this_shred_id = qid_shred[new_qid][vmap[new_var]]
+
+			db.item_diffs.update( { "questionnaire_id" : new_qid,
+														"var" : new_var },
+													{ "$set" : {
+															"date_added" : now,
+															"last_updated" : now,
+															"shred_image_id" : this_shred_id,
+															"status" : "unexamined"
+													}} )
 
 
-  return 
+	return 
+
+def get_questionnaire_diffs(db, questionnaire_id):
+	"""
+	given a questionnaire id, return a list containing all of the
+	diff entries in the database that relate to that questionnaire
+	"""
+
+	res = db.item_diffs.find( { "questionnaire_id" : questionnaire_id })
+
+	these_diffs = []
+
+	for i in res:
+		these_diffs.append(i)
+
+	return these_diffs
 
 def print_all_diffs(db):
 
@@ -113,11 +154,21 @@ if __name__ == "__main__":
 	# test code
 	db = connect_to_database()
 
-	insert_diffs(db, [ ("28_00142", "Q202"), ("28_00142", "Q201"), ("28_00140", "Q201"), ("28_00144", "Q201")])
-	insert_diffs(db, [ ("28_00142", "Q202"), ("28_00142", "Q504_mes")])	
+	diffs = get_diffs("~/.scaleupbrazil/diffs.csv")
+	insert_diffs(db, diffs)  
 
+	# insert the diffs that are in the captricity-vargas-diffs.csv file, as long
+	# as they do not already exist
+	print 'diffs:'
+	print '------'
 	for item in db.item_diffs.find():
 		print item
+
+	print 'first 20 shreds'
+	print '---------------'
+	for item in db.shred_images.find(limit=20):
+		print item.keys()
+
 
 
 
