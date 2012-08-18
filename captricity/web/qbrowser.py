@@ -32,7 +32,8 @@ diff_form = form.Form(
             form.Textbox("ajdu_value", description="value"),
             form.Checkbox(name='blank', checked=False),
             form.Checkbox(name='unreadable', checked=False),
-            form.Checkbox(name='very distorted', checked=False)
+            form.Checkbox(name='very distorted', checked=False),
+            form.Textbox("comment", description="comment")
             )
 
 
@@ -75,7 +76,7 @@ class questionnaire_diffs:
     def GET(self, questionnaire_id): 
 
         # grab the diffs for this questionnaire
-        diffs = cd.get_questionnaire_diffs(db, questionnaire_id)
+        diffs = cd.get_questionnaire_diffs(db, questionnaire_id, limit=3)
 
         diff_shred_qs = [x['var'] for x in diffs]
         diff_shred_ids = [x['shred_image_id'] for x in diffs]
