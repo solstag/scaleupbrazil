@@ -128,16 +128,13 @@ def insert_diffs(db, diff_data):
 
 	return 
 
-def get_questionnaire_diffs(db, questionnaire_id, limit=None):
+def get_questionnaire_diffs(db, questionnaire_id, limit=0):
 	"""
 	given a questionnaire id, return a list containing all of the
 	diff entries in the database that relate to that questionnaire
 	"""
 
-	if limit is None:
-		res = db.item_diffs.find( { "questionnaire_id" : questionnaire_id })
-	else:
-		res = db.item_diffs.find( { "questionnaire_id" : questionnaire_id }).limit(limit)
+	res = db.item_diffs.find( { "questionnaire_id" : questionnaire_id }).limit(limit)
 
 	these_diffs = []
 
