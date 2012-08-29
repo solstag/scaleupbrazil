@@ -13,6 +13,12 @@ The scripts will look for the scanned survey forms under the directory:
 
 Do not include scanned forms in the repository as it wouldn't be appropriate to release them to the public.
 
+Also, the upload scans tools will save the survey forms in the directory
+
+~/.scaleupbrazil/scanned-forms/raw-scans/YYYYMMDD
+
+where YYYYMMDD is the day's date
+
 The JSON document which describes different possible paths through the survey (due, for example, to skip patterns), should be in
 
 ~/.scaleupbrazil/template-ids.json

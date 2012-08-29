@@ -337,6 +337,20 @@ def load_var_maps(varfile="~/.scaleupbrazil/varname-map.json"):
 
   return res
 
+def get_vargas_questionnaires(qfile="~/.scaleupbrazil/survey-paths.csv"):
+  """
+  load the ids of the surveys that are in the Vargas dataset
+  """
+
+  ## TODO-EXCEPTION
+  infile = open(os.path.expanduser(qfile), 'r')
+  incsv = csv.DictReader(infile)
+
+  qids = [x['id'] for x in incsv]
+
+  infile.close()
+
+  return qids
 
 
 def document_info(client):
