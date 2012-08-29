@@ -40,9 +40,6 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
-## TODO -- this should get the list of questionnaires to be uploaded...
-qids = [ '28_00140', '28_00141', '29_1010' ]
-
 class index: 
     uploadform = form.Form( 
         form.Dropdown(name='Estado', args=state_codes, value='Todos'),
@@ -51,7 +48,7 @@ class index:
         form.File(name='Arquivo'))
     def GET(self): 
         form = self.uploadform()
-        return render.uploadscans(form, qids, len(qids))
+        return render.uploadscans(form, quests, len(quests))
 
     def POST(self): 
         return "not yet implemented..."
