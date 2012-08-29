@@ -1,6 +1,22 @@
 $def with (form)
+<!doctype html>
+
+<html>
+<head>
+	<title>upload tool - dev</title>
+	<link type="text/css" href="static/css/lib/ui-lightness/jquery-ui-1.8.23.custom.css" 
+	      rel="Stylesheet" />	
+	<script type="text/javascript" src="static/js/lib/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="static/js/lib/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript">
+		// TODO -- add form-specific code here...
+	</script>
+</head>
+<body>
 
 <form name="main" method="post" enctype="multipart/form-data"> 
 $if not form.valid: <p class="error">Try again, AmeriCAN:</p>
 $:form.render()
 <input type="submit" />    </form>
+
+</body>

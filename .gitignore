@@ -30,3 +30,8 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# 3d party javascript and css libraries
+captricity/web/static/js/lib/*
+captricity/web/static/css/lib/*
+
