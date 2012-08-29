@@ -4,7 +4,7 @@
 from os import path
 import web
 from web import form, safewrite
-import sys, os, datetime
+import sys, os, datetime, json
 
 # TODO - for now, this seems to work for getting the
 # captricityTransfer library into the search path
@@ -25,7 +25,8 @@ save_dir = os.path.expanduser('~/.scaleupbrazil/scanned-forms/raw-scans/' + toda
 if not (os.path.isdir(save_dir)):
     os.mkdir(save_dir)
 
-urls = ('/', 'index')
+urls = ('/', 'index',
+        '/toupload', 'toupload')
 app = web.application(urls, globals())
 
 # read list of un-uploaded questionnaires
@@ -39,16 +40,22 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
+## TODO -- this should get the list of questionnaires to be uploaded...
+qids = [ '28_00140', '28_00141', '29_1010' ]
+
 class index: 
     uploadform = form.Form( 
         form.Dropdown(name='Estado', args=state_codes, value='Todos'),
         form.Dropdown(name='Questionario', args=quests, value=defaultquest),
+        form.Textbox(name="quest id", id="qid"),
         form.File(name='Arquivo'))
     def GET(self): 
         form = self.uploadform()
-        return render.uploadscans(form)
+        return render.uploadscans(form, qids, len(qids))
 
     def POST(self): 
+        return "not yet implemented..."
+
         form = self.uploadform() 
         myinput = web.input(Arquivo={})
         if not form.validates(): 
@@ -67,6 +74,8 @@ class index:
                 return render.uploadscans(self.uploadform())
             else:
                 return 'Congratulations, you are done!'
+
+        return json.dumps(toret)
 
 if __name__=="__main__":
     web.internalerror = web.debugerror

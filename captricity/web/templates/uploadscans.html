@@ -1,4 +1,4 @@
-$def with (form)
+$def with (form, qids, qids_len)
 <!doctype html>
 
 <html>
@@ -10,6 +10,26 @@ $def with (form)
 	<script type="text/javascript" src="static/js/lib/jquery-ui-1.8.23.custom.min.js"></script>
 	<script type="text/javascript">
 		// TODO -- add form-specific code here...
+		jQuery(function() {
+			var qidvals = new Array($qids_len);
+
+			$for qid in qids:
+				qidvals[$loop.index0] = "$qid";
+
+			res = jQuery("#qid").length;
+			if (res) {
+				console.log('selected ' + res + ' items');
+			} else {
+				console.log('selected nothing...');			
+			}
+
+			//jQuery("#qid").autocomplete({ source : testvals });
+			jQuery("#qid").autocomplete({
+				source : qidvals
+			}
+			);
+
+		});
 	</script>
 </head>
 <body>
@@ -17,6 +37,8 @@ $def with (form)
 <form name="main" method="post" enctype="multipart/form-data"> 
 $if not form.valid: <p class="error">Try again, AmeriCAN:</p>
 $:form.render()
-<input type="submit" />    </form>
+<!--<input id="test">-->
+<input type="submit" />    
+</form>
 
 </body>
