@@ -58,28 +58,54 @@ def main():
   
   bundle_filter = lambda x: not check_if_converted( x, jpglist, xrange(imagesperfile)) 
 
+  #
+  # convert all of the tiffs
+  #
   for bundle in filter( bundle_filter, tifbundles):
-    print 'Converting {}'.format(bundle)
-    im=Image.open(args.input_dir + '/' + bundle)
-    try:
-      while True:
-        im.rotate(270)
-        # NB: not sure if just changing the extension will let this save as a jpeg; double-check
-        im.save( os.path.splitext(bundle)[0] + '-' + str(im.tell()) + '.jpg' )
-        im.seek(im.tell()+1)
-    except EOFError:
-      pass
-
-  for bundle in filter(bundle_filter, pdfbundles):
     print 'Converting {}'.format(bundle)
     basename = os.path.splitext(bundle)[0]
 
+    # use imagemagick to convert tiffs to jpgs
+    # NB: imagemagick complains about format issues with the tiffs, but this
+    #     doesn't appear to have any effect on the result...
+    retcode = call([ 'convert', 
+                     args.input_dir + '/' + bundle, 
+                     args.output_dir + '/' + basename + '-%03d.jpg' ])
+
+    tempnames = filter( lambda x: x.startswith(basename) and x.endswith('.jpg'),  
+                        os.listdir(args.output_dir) )
+
+    # be sure that conversion produced the right number of jpgs, and
+    # rotate each one so that it is right-side up
+    # (so far, we haven't had to rotate the tiffs, so the part that actually rotates
+    #  is commented out)
+    if len(tempnames) != imagesperfile:
+        raise BaseException('The file {} does not appear to have {} pages!'.format(bundle, imagesperfile))
+    else:
+        for name in tempnames:
+            pass
+            #retcode = call([ 'convert', '-rotate', '0', args.output_dir+'/'+name,
+            #                  args.output_dir+'/'+os.path.splitext(name)[0]+'.jpg' ])
+
+  #
+  # convert all of the pdfs
+  #
+  for bundle in filter(bundle_filter, pdfbundles):
+
+    print 'Converting {}'.format(bundle)
+    basename = os.path.splitext(bundle)[0]
+
+    # use pdfimages to get jpgs from the pdf files; this is much faster than
+    # other methods we tried
     retcode = call([ 'pdfimages', '-j', args.input_dir + '/' + bundle, args.output_dir + '/' + basename ])
 
-    tempnames = filter( lambda x: x.startswith(basename) and x.endswith('.jpg'),  os.listdir(args.output_dir) )
+    tempnames = filter( lambda x: x.startswith(basename) and x.endswith('.jpg'),  
+                        os.listdir(args.output_dir) )
 
+    # be sure that conversion produced the right number of jpgs, and
+    # rotate each one so that it is right-side up
     if len(tempnames) != imagesperfile:
-        raise BaseException('Something is wrong with the world today: {}'.format(bundle))
+        raise BaseException('The file {} does not appear to have {} pages!'.format(bundle, imagesperfile))
     else:
         for name in tempnames:
             retcode = call([ 'convert', '-rotate', '90', args.output_dir+'/'+name,
