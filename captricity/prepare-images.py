@@ -25,15 +25,14 @@ def check_if_converted(bundle, imagelist, imagerange):
 def main():
 
   parser = argparse.ArgumentParser(description='''Convert scanned PDF files into appropriately rotated JPEGs, 
-    which can be uploaded to Captricity for processing.
-    Support for TIFF files not yet fully tested!''')
+    which can be uploaded to Captricity for processing.''')
   
   parser.add_argument('-p', '--pattern', action="store",
                       dest="infile_pattern", default=None,
-                      help="only extract JPEGs from pdfs whose file names matches this pattern")
+                      help="only extract JPEGs from pdfs and tiffs whose file names matches this pattern")
   parser.add_argument('-i', '--indir', action="store",
                       dest="input_dir", default=".",
-                      help="directory to search for input (pdf files; default: current directory)")
+                      help="directory to search for input (pdf/tiff files; default: current directory)")
   parser.add_argument('-o', '--outdir', action="store",
                       dest="output_dir", default=".",
                       help="directory for saving resulting .jpg files (default: current directory)")
