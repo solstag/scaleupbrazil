@@ -37,9 +37,17 @@ urls = ('/', 'uploadtool',
 
 app = web.application(urls, globals())
 
-store = web.session.DiskStore('sessions')
-session = web.session.Session(app, store,
-                              initializer={'loggedin': 0, 'privilege': 0})
+# got this tip from
+# http://stackoverflow.com/questions/7382886/session-in-webpy-getting-username-in-all-classes
+# without this, the session resets every time a new page is viewed
+if web.config.get('_session') is None:
+    store = web.session.DiskStore('sessions')
+    session = web.session.Session(app, 
+                                  store,
+                                  initializer={'loggedin': False, 'privilege': 0})
+    web.config._session = session
+else:
+    session = web.config._session
 
 # read list of un-uploaded questionnaires
 #      from db / file
@@ -57,18 +65,17 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
-#### TODO -- LEFT OFF HERE;
-####  figuring out user authentication
-####  just found this
-####     http://webpy.org/tutorial3
-####  under 'User authentication' it looks like there's
-####  a very useful example
-
+# quick helper function to determine whether or not the user is logged in...
 def logged_in():
+
+    if 'loggedin' not in session:
+        web.debug("'loggedin' not in session; creating...")
+        session.loggedin = False
+
     if session.loggedin == False:
-        return True
-    else:
         return False
+    else:
+        return True
 
 class login:
 
@@ -86,18 +93,19 @@ class login:
         if not form.validates():
             return 'no dice!'
         else:
-            session.logged_in = True
-            return 'ok!'
-            #raise web.seeother('/uploadtool')
+            session.loggedin = True
+            #return 'ok! ' + str(logged_in())
+            raise web.seeother('/upload')
 
 class logout:
 
     def GET(self):
-        session.logged_in = False
+        session.loggedin = False
         raise web.seeother('/login')
 
 
 class uploadtool: 
+
     uploadform = form.Form( 
         form.Textbox(name='Questionario', id="qid"),
         form.File(name='Arquivo'))
@@ -105,13 +113,14 @@ class uploadtool:
     def GET(self):
 
         if not logged_in():
-            return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
+            raise web.seeother('/login')
+            #return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
 
         form = self.uploadform()
         return render.uploadscans(form, quests, len(quests))
 
     def POST(self): 
-        if logged_in() != True:
+        if not logged_in():
             return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
 
         return "not yet implemented..."
@@ -121,8 +130,8 @@ class uploadtool:
         if not form.validates(): 
             return render.uploadscans(form)
         else:
-            safewrite(path.expanduser(save_dir)+form['Questionario'].value+'.pdf',
-                      myinput['Arquivo'].value)
+            #safewrite(path.expanduser(save_dir)+form['Questionario'].value+'.pdf',
+            #          myinput['Arquivo'].value)
 
             ## TODO -- LEFT OFF HERE:
             ##   * in input form, narrow down by state
