@@ -42,10 +42,9 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
 
 class index: 
     uploadform = form.Form( 
-        form.Dropdown(name='Estado', args=state_codes, value='Todos'),
-        form.Dropdown(name='Questionario', args=quests, value=defaultquest),
-        form.Textbox(name="quest id", id="qid"),
+        form.Textbox(name='Questionario', id="qid"),
         form.File(name='Arquivo'))
+
     def GET(self): 
         form = self.uploadform()
         return render.uploadscans(form, quests, len(quests))

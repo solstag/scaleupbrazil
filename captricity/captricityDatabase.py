@@ -4,6 +4,7 @@ functions used in transferring data to and from the database
 """
 
 import sys, os, re, json, csv, requests
+import bcrypt
 import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
@@ -20,6 +21,41 @@ def connect_to_database():
 	"""
 
 	return Connection().captools
+
+def insert_user(db, username, pwd):
+	"""
+	insert a website user into the user table; this could
+	either be someone who uploads scans, or someone who
+	does data entry
+	"""
+
+	# use bcrypt to store a hash of the password
+	# see http://stackoverflow.com/questions/9559549/how-to-store-and-compare-password-in-db-using-py-bcrypt
+	salt = bcrypt.gensalt()
+	passhash = bcrypt.hashpw(pwd, salt)
+
+	# TODO -- check to see if username already exists...
+
+	db.users.insert( { 'username' : username,
+			               'passhash' : passhash,
+			               'salt' : salt })
+
+
+def check_user(db, username, pwd):
+	"""
+	check to see if the username / pwd pair match
+	"""
+
+	res = db.users.find_one( { 'username' : username })
+
+	stored_passhash = res['passhash']
+	salt = res['salt']
+
+	if bcrypt.hashpw(pwd, salt) == stored_passhash:
+		print 'password matches!'
+	else: 
+		print 'password does not match...'
+
 
 def insert_shreds_from_jobs(client, db, job_ids):
 	"""
@@ -154,20 +190,26 @@ if __name__ == "__main__":
 	# test code
 	db = connect_to_database()
 
-	diffs = get_diffs("~/.scaleupbrazil/diffs.csv")
-	insert_diffs(db, diffs)  
+	insert_user(db, 'testuser', 'testpass')
+
+	check_user(db, 'testuser', 'testpass')
+
+	check_user(db, 'testuser', 'fakepass')
+
+	#diffs = get_diffs("~/.scaleupbrazil/diffs.csv")
+	#insert_diffs(db, diffs)  
 
 	# insert the diffs that are in the captricity-vargas-diffs.csv file, as long
 	# as they do not already exist
-	print 'diffs:'
-	print '------'
-	for item in db.item_diffs.find():
-		print item
+	#print 'diffs:'
+	#print '------'
+	#for item in db.item_diffs.find():
+	#	print item
 
-	print 'first 20 shreds'
-	print '---------------'
-	for item in db.shred_images.find(limit=20):
-		print item.keys()
+	#print 'first 20 shreds'
+	#print '---------------'
+	#for item in db.shred_images.find(limit=20):
+	#	print item.keys()
 
 
 
