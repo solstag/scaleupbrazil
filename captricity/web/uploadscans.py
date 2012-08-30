@@ -25,14 +25,29 @@ save_dir = os.path.expanduser('~/.scaleupbrazil/scanned-forms/raw-scans/' + toda
 if not (os.path.isdir(save_dir)):
     os.mkdir(save_dir)
 
-urls = ('/', 'index',
+urls = ('/', 'uploadtool',
+        '/login', 'login',
+        '/logout', 'logout',
+        '/upload', 'uploadtool',
         '/toupload', 'toupload')
+
+# can't use debug with sessions; see
+# http://webpy.org/docs/0.3/sessions
+web.config.debug = False
+
 app = web.application(urls, globals())
+
+store = web.session.DiskStore('sessions')
+session = web.session.Session(app, store,
+                              initializer={'login': 0, 'privilege': 0})
 
 # read list of un-uploaded questionnaires
 #      from db / file
 quests = ct.get_vargas_questionnaires()
 defaultquest = ''
+
+loginform = form.Form(form.Textbox(name="username"),
+                      form.Password(name="password"))
 
 state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -40,16 +55,51 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
-class index: 
+def logged_in():
+    if session.get('logged_in', False):
+        return True
+    else:
+        return False
+
+class login:
+
+    def GET(self):
+        if logged_in():
+            return '<h1>you are already logged in!</h1>. <a href="/logout">logout now</a>'
+
+        # form w/ username and password
+        form = loginform()
+        return render.uploadscans_login(form)
+
+    def POST(self):
+        pass
+        # TODO
+
+
+class logout:
+
+    def GET(self):
+        session.set('logged_in', False)
+        raise web.seeother('/login')
+
+
+class uploadtool: 
     uploadform = form.Form( 
         form.Textbox(name='Questionario', id="qid"),
         form.File(name='Arquivo'))
 
-    def GET(self): 
+    def GET(self):
+
+        if not logged_in():
+            return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
+
         form = self.uploadform()
         return render.uploadscans(form, quests, len(quests))
 
     def POST(self): 
+        if logged_in() != True:
+            return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
+
         return "not yet implemented..."
 
         form = self.uploadform() 
