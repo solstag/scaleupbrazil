@@ -33,13 +33,13 @@ urls = ('/', 'uploadtool',
 
 # can't use debug with sessions; see
 # http://webpy.org/docs/0.3/sessions
-web.config.debug = False
+#web.config.debug = False
 
 app = web.application(urls, globals())
 
 store = web.session.DiskStore('sessions')
 session = web.session.Session(app, store,
-                              initializer={'login': 0, 'privilege': 0})
+                              initializer={'loggedin': 0, 'privilege': 0})
 
 # read list of un-uploaded questionnaires
 #      from db / file
@@ -47,7 +47,9 @@ quests = ct.get_vargas_questionnaires()
 defaultquest = ''
 
 loginform = form.Form(form.Textbox(name="username"),
-                      form.Password(name="password"))
+                      form.Password(name="password"),
+                      validators = [ form.Validator("Can't find user, or password is incorrect",
+                                                    lambda i: True)])
 
 state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -55,8 +57,15 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
+#### TODO -- LEFT OFF HERE;
+####  figuring out user authentication
+####  just found this
+####     http://webpy.org/tutorial3
+####  under 'User authentication' it looks like there's
+####  a very useful example
+
 def logged_in():
-    if session.get('logged_in', False):
+    if session.loggedin == False:
         return True
     else:
         return False
@@ -72,14 +81,19 @@ class login:
         return render.uploadscans_login(form)
 
     def POST(self):
-        pass
-        # TODO
+        form = loginform()
 
+        if not form.validates():
+            return 'no dice!'
+        else:
+            session.logged_in = True
+            return 'ok!'
+            #raise web.seeother('/uploadtool')
 
 class logout:
 
     def GET(self):
-        session.set('logged_in', False)
+        session.logged_in = False
         raise web.seeother('/login')
 
 
