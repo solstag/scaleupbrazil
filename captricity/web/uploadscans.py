@@ -70,6 +70,14 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 41, 42, 43,
                 50, 51, 52, 53]
 
+# helper fn to determine whether or not the questionnaire number entered
+# is a valid one
+def check_qnum(form):
+    if form['Questionario'] in quests:
+        return True
+    else:
+        return False
+
 # quick helper function to determine whether or not the user is logged in...
 def logged_in():
 
@@ -99,7 +107,6 @@ class login:
             return render.uploadscans_badlogin()
         else:
             session.loggedin = True
-            #return 'ok! ' + str(logged_in())
             raise web.seeother('/upload')
 
 class logout:
@@ -113,37 +120,38 @@ class uploadtool:
 
     uploadform = form.Form( 
         form.Textbox(name='Questionario', id="qid"),
-        form.File(name='Arquivo'))
+        form.File(name='Arquivo'),
+        validators = [form.Validator("Questionario doesn't exist", check_qnum)])
 
     def GET(self):
 
         if not logged_in():
             raise web.seeother('/login')
 
+        params = web.input()
+
         form = self.uploadform()
-        return render.uploadscans(form, quests, len(quests))
+        return render.uploadscans(form, quests, len(quests), params['msg'])
 
     def POST(self): 
 
         if not logged_in():
             raise web.seeother('/login')
 
-        return "not yet implemented..."
+        params = web.input()
 
         form = self.uploadform() 
-        myinput = web.input(Arquivo={})
-        if not form.validates(): 
-            return render.uploadscans(form)
-        else:
-            #safewrite(path.expanduser(save_dir)+form['Questionario'].value+'.pdf',
-            #          myinput['Arquivo'].value)
 
-            ## TODO -- LEFT OFF HERE:
-            ##   * in input form, narrow down by state
-            ##   * might make more sense to re-ping for list fo questionnaires
-            ##     rather than just delete one from the old list
+        if not form.validates(): 
+            ## TODO -- handle this error better...
+            return 'not a real questionnaire number'
+        else:
+            ## TODO -- determine whether questionnaire is pdf or tiff...
+            safewrite(path.expanduser(save_dir)+form['Questionario'].value+'.pdf',
+                      myinput['Arquivo'].value)
+
             quests.remove(form['Questionario'].value)
-#            return "Grrreat success! Questionnaire {} uploaded.<br/>".format(form['Questionario'].value)
+
             if quests:
                 return render.uploadscans(self.uploadform())
             else:
