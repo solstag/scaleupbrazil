@@ -52,9 +52,9 @@ def check_user(db, username, pwd):
 	salt = res['salt']
 
 	if bcrypt.hashpw(pwd, salt) == stored_passhash:
-		print 'password matches!'
+		return True
 	else: 
-		print 'password does not match...'
+		return False
 
 
 def insert_shreds_from_jobs(client, db, job_ids):

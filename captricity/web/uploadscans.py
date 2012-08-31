@@ -16,6 +16,7 @@ import captricityDatabase as cd
 
 render = web.template.render('templates/')
 
+# get today's date for use with directory structure...
 today = datetime.datetime.now()
 today_date = str(today.date())
 
@@ -24,6 +25,8 @@ save_dir = os.path.expanduser('~/.scaleupbrazil/scanned-forms/raw-scans/' + toda
 # if the output directory doesn't exist, create it
 if not (os.path.isdir(save_dir)):
     os.mkdir(save_dir)
+
+db = cd.connect_to_database()
 
 urls = ('/', 'uploadtool',
         '/login', 'login',
@@ -57,7 +60,9 @@ defaultquest = ''
 loginform = form.Form(form.Textbox(name="username"),
                       form.Password(name="password"),
                       validators = [ form.Validator("Can't find user, or password is incorrect",
-                                                    lambda i: True)])
+                                                    lambda f: cd.check_user(db, 
+                                                                  f['username'], 
+                                                                  f['password']))])
 
 state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -69,7 +74,7 @@ state_codes = [ 11, 12, 13, 14, 15, 16, 17,
 def logged_in():
 
     if 'loggedin' not in session:
-        web.debug("'loggedin' not in session; creating...")
+        #web.debug("'loggedin' not in session; creating...")
         session.loggedin = False
 
     if session.loggedin == False:
@@ -91,7 +96,7 @@ class login:
         form = loginform()
 
         if not form.validates():
-            return 'no dice!'
+            return render.uploadscans_badlogin()
         else:
             session.loggedin = True
             #return 'ok! ' + str(logged_in())
@@ -114,14 +119,14 @@ class uploadtool:
 
         if not logged_in():
             raise web.seeother('/login')
-            #return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
 
         form = self.uploadform()
         return render.uploadscans(form, quests, len(quests))
 
     def POST(self): 
+
         if not logged_in():
-            return '<h1>you are not logged in!</h1>. <a href="/login">login now</a>'
+            raise web.seeother('/login')
 
         return "not yet implemented..."
 
