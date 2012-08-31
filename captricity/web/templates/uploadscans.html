@@ -1,4 +1,4 @@
-$def with (form, qids, qids_len)
+$def with (form, qids, qids_len, msg)
 <!doctype html>
 
 <html>
@@ -33,7 +33,7 @@ $def with (form, qids, qids_len)
 	</script>
 </head>
 <body>
-
+<div id="message">$msg</div>
 <form name="main" method="post" enctype="multipart/form-data"> 
 $if not form.valid: <p class="error">Try again, AmeriCAN:</p>
 $:form.render()

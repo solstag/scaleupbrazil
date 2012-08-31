@@ -1,4 +1,4 @@
-$def with (form)
+$def with (form, msg)
 <!doctype html>
 
 <html>
@@ -6,6 +6,7 @@ $def with (form)
 	<title>upload tool - login</title>
 </head>
 <body>
+<div class="message">$msg</div>
 <form name="login" method="post">
 	$if not form.valid: <p class="error">Error logging in. Perhaps you used the wrong username or password?</p>
 	$:form.render()

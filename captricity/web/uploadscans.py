@@ -24,6 +24,7 @@ save_dir = os.path.expanduser('~/.scaleupbrazil/scanned-forms/raw-scans/' + toda
 
 # if the output directory doesn't exist, create it
 if not (os.path.isdir(save_dir)):
+    web.debug('creating output directory: ', save_dir)
     os.mkdir(save_dir)
 
 db = cd.connect_to_database()
@@ -33,10 +34,6 @@ urls = ('/', 'uploadtool',
         '/logout', 'logout',
         '/upload', 'uploadtool',
         '/toupload', 'toupload')
-
-# can't use debug with sessions; see
-# http://webpy.org/docs/0.3/sessions
-#web.config.debug = False
 
 app = web.application(urls, globals())
 
@@ -94,17 +91,25 @@ class login:
 
     def GET(self):
         if logged_in():
-            return '<h1>you are already logged in!</h1>. <a href="/logout">logout now</a>'
+            return '<h1>you are already logged in!</h1>. <a href="/logout">logout now</a> or <a href="/upload">go to upload tool</a>'
+
+        params = web.input()
+
+        ## TODO -- there must be a less verbose way to do this
+        if 'msg' not in params.keys():
+            thismsg = ""
+        else:
+            thismsg = params['msg']
 
         # form w/ username and password
         form = loginform()
-        return render.uploadscans_login(form)
+        return render.uploadscans_login(form, thismsg)
 
     def POST(self):
         form = loginform()
 
         if not form.validates():
-            return render.uploadscans_badlogin()
+            raise web.seeother('/login?msg=Login failed.')
         else:
             session.loggedin = True
             raise web.seeother('/upload')
@@ -130,8 +135,14 @@ class uploadtool:
 
         params = web.input()
 
+        ## TODO -- there must be a less verbose way to do this
+        if 'msg' not in params.keys():
+            thismsg = ""
+        else:
+            thismsg = params['msg']
+
         form = self.uploadform()
-        return render.uploadscans(form, quests, len(quests), params['msg'])
+        return render.uploadscans(form, quests, len(quests), thismsg)
 
     def POST(self): 
 
@@ -140,24 +151,45 @@ class uploadtool:
 
         params = web.input()
 
+        ## TODO -- there must be a less verbose way to do this        
+        if 'msg' not in params.keys():
+            thismsg = ""
+        else:
+            thismsg = params['msg']
         form = self.uploadform() 
 
         if not form.validates(): 
-            ## TODO -- handle this error better...
-            return 'not a real questionnaire number'
+
+            ## TODO -- there must be a better way to add arguments to
+            ##         a redirect, but i haven't been able to find it yet
+            raise web.seeother('/upload?msg=That appears to be an invalid questionnaire number.')
         else:
+
+            qnum = form['Arquivo'].name
+
+            ## TODO -- LEFT OFF HERE:
+            ## want to be able to determine the file type from the
+            ## upload form...
+            web.debug("qnum value is " + qnum)
+            import pdb; pdb.set_trace()
+
+            if qnum.lower().endswith('pdf'):
+                filetype = 'pdf'
+            elif qnum.lower().endswith('tiff'):
+                filetype = 'tiff'
+            else:
+                raise web.seeother('/upload?msg=Unrecognized file type! I know pdf and tiff.')
+
             ## TODO -- determine whether questionnaire is pdf or tiff...
-            safewrite(path.expanduser(save_dir)+form['Questionario'].value+'.pdf',
-                      myinput['Arquivo'].value)
+            fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + filetype
+            web.debug('writing to ' + fn)
+
+            safewrite(fn, form['Arquivo'].value)
 
             quests.remove(form['Questionario'].value)
 
-            if quests:
-                return render.uploadscans(self.uploadform())
-            else:
-                return 'Congratulations, you are done!'
+            raise web.seeother('/upload?msg=Upload sucessful.')
 
-        return json.dumps(toret)
 
 if __name__=="__main__":
     web.internalerror = web.debugerror
