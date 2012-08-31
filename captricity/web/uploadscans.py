@@ -184,6 +184,7 @@ class uploadtool:
             fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + filetype
             web.debug('writing to ' + fn)
 
+            ## TODO -- detect problems here...
             safewrite(fn, form['Arquivo'].value)
 
             quests.remove(form['Questionario'].value)
