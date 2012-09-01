@@ -39,7 +39,7 @@ app = web.application(urls, globals())
 
 # got this tip from
 # http://stackoverflow.com/questions/7382886/session-in-webpy-getting-username-in-all-classes
-# without this, the session resets every time a new page is viewed
+# without this, the session resets every time a new page is viewed (as far as i can tell)
 if web.config.get('_session') is None:
     store = web.session.DiskStore('sessions')
     session = web.session.Session(app, 
@@ -52,34 +52,20 @@ else:
 # read list of un-uploaded questionnaires
 #      from db / file
 quests = ct.get_vargas_questionnaires()
-defaultquest = ''
 
-loginform = form.Form(form.Textbox(name="username"),
-                      form.Password(name="password"),
-                      validators = [ form.Validator("Can't find user, or password is incorrect",
-                                                    lambda f: cd.check_user(db, 
-                                                                  f['username'], 
-                                                                  f['password']))])
-
+# TODO -- haven't deleted this yet since we might eventually
+#         have the upload interface use letter or number codes
+#         for the states
 state_codes = [ 11, 12, 13, 14, 15, 16, 17,
                 21, 22, 23, 24, 25, 26, 27, 28, 29,
                 31, 32, 33, 35,
                 41, 42, 43,
                 50, 51, 52, 53]
 
-# helper fn to determine whether or not the questionnaire number entered
-# is a valid one
-def check_qnum(form):
-    if form['Questionario'] in quests:
-        return True
-    else:
-        return False
-
 # quick helper function to determine whether or not the user is logged in...
 def logged_in():
 
     if 'loggedin' not in session:
-        #web.debug("'loggedin' not in session; creating...")
         session.loggedin = False
 
     if session.loggedin == False:
@@ -89,27 +75,34 @@ def logged_in():
 
 class login:
 
+    loginform = form.Form(form.Textbox(name="username"),
+                          form.Password(name="password"),
+                          form.Button(name="login"),
+                          validators = [ form.Validator("Can't find user, or password is incorrect",
+                                                         lambda f: cd.check_user(db, 
+                                                                                 f['username'], 
+                                                                                 f['password'])) ])
+
+
+
     def GET(self):
         if logged_in():
-            return '<h1>you are already logged in!</h1>. <a href="/logout">logout now</a> or <a href="/upload">go to upload tool</a>'
-
-        params = web.input()
-
-        ## TODO -- there must be a less verbose way to do this
-        if 'msg' not in params.keys():
-            thismsg = ""
-        else:
-            thismsg = params['msg']
+            return """
+<h1>you are already logged in!</h1>. 
+<a href="/logout">logout now</a> or <a href="/upload">go to upload tool</a>
+"""
 
         # form w/ username and password
-        form = loginform()
-        return render.uploadscans_login(form, thismsg)
+        form = self.loginform()
+        return render.uploadscans_login(form)
 
     def POST(self):
-        form = loginform()
+        form = self.loginform()
 
         if not form.validates():
-            raise web.seeother('/login?msg=Login failed.')
+            web.debug("login form invalid...")
+            return render.uploadscans_login(form)
+
         else:
             session.loggedin = True
             raise web.seeother('/upload')
@@ -123,9 +116,21 @@ class logout:
 
 class uploadtool: 
 
+    # helper fn to determine whether or not the questionnaire number entered
+    # is a valid one
+    def check_qnum(form):
+        if form['Questionario'] in quests:
+            return True
+        else:
+            return False
+
+    ## TODO -- add checks that fields aren't blank, match the expected patterns, etc
+    ## also add check that file type is correct...
+    ##  see http://webpy.org/form
     uploadform = form.Form( 
         form.Textbox(name='Questionario', id="qid"),
-        form.File(name='Arquivo'),
+        form.File(name='Arquivo', default={}),
+        form.Button(name='upload'),
         validators = [form.Validator("Questionario doesn't exist", check_qnum)])
 
     def GET(self):
@@ -133,55 +138,48 @@ class uploadtool:
         if not logged_in():
             raise web.seeother('/login')
 
-        params = web.input()
-
-        ## TODO -- there must be a less verbose way to do this
-        if 'msg' not in params.keys():
-            thismsg = ""
-        else:
-            thismsg = params['msg']
+        params = web.input(msg="")
 
         form = self.uploadform()
-        return render.uploadscans(form, quests, len(quests), thismsg)
+        return render.uploadscans(form, quests, len(quests), params['msg'])
 
     def POST(self): 
 
         if not logged_in():
             raise web.seeother('/login')
 
-        params = web.input()
+        params = web.input(msg="")
 
-        ## TODO -- there must be a less verbose way to do this        
-        if 'msg' not in params.keys():
-            thismsg = ""
-        else:
-            thismsg = params['msg']
         form = self.uploadform() 
 
         if not form.validates(): 
 
             ## TODO -- there must be a better way to add arguments to
             ##         a redirect, but i haven't been able to find it yet
-            raise web.seeother('/upload?msg=That appears to be an invalid questionnaire number.')
+            web.debug('upload form failed validation...')
+            return render.uploadscans(form, quests, len(quests), params['msg'])
+            #raise web.seeother('/upload?msg=That appears to be an invalid questionnaire number.')
+
         else:
 
             qnum = form['Arquivo'].name
 
-            ## TODO -- LEFT OFF HERE:
-            ## want to be able to determine the file type from the
-            ## upload form...
-            web.debug("qnum value is " + qnum)
-            import pdb; pdb.set_trace()
+            # this is all to get the filename (on the client side),
+            # which we need to determine that it's tiff or pdf...
+            # see: https://groups.google.com/forum/?fromgroups=#!topic/webpy/2k3x6ULb5t8
+            # and http://epydoc.sourceforge.net/stdlib/cgi.FieldStorage-class.html
+            ri = web.webapi.rawinput()
+            infilename = ri['Arquivo'].filename
 
-            if qnum.lower().endswith('pdf'):
+            if infilename.lower().endswith('pdf'):
                 filetype = 'pdf'
-            elif qnum.lower().endswith('tiff'):
+            elif infilename.lower().endswith('tiff'):
                 filetype = 'tiff'
             else:
                 raise web.seeother('/upload?msg=Unrecognized file type! I know pdf and tiff.')
 
             ## TODO -- determine whether questionnaire is pdf or tiff...
-            fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + filetype
+            fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + '.' + filetype
             web.debug('writing to ' + fn)
 
             ## TODO -- detect problems here...

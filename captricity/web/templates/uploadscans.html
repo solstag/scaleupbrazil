@@ -35,10 +35,9 @@ $def with (form, qids, qids_len, msg)
 <body>
 <div id="message">$msg</div>
 <form name="main" method="post" enctype="multipart/form-data"> 
-$if not form.valid: <p class="error">Try again, AmeriCAN:</p>
+$if not form.valid: 
+	<p class="error">Error uploading file.</p>
 $:form.render()
-<!--<input id="test">-->
-<input type="submit" />    
 </form>
 <p>
 <a href="/logout">logout</a>
