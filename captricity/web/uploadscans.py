@@ -30,10 +30,11 @@ if not (os.path.isdir(save_dir)):
 db = cd.connect_to_database()
 
 urls = ('/', 'uploadtool',
-        '/login', 'login',
-        '/logout', 'logout',
-        '/upload', 'uploadtool',
-        '/toupload', 'toupload')
+        '/uploadscans', 'uploadtool',
+        '/uploadscans/login', 'login',
+        '/uploadscans/logout', 'logout',
+        '/uploadscans/upload', 'uploadtool',
+        '/uploadscans/toupload', 'toupload')
 
 app = web.application(urls, globals())
 # use mod_wsgi and apache for live server
@@ -96,7 +97,7 @@ class login:
         if logged_in():
             return """
 <h1>you are already logged in!</h1>. 
-<a href="/logout">logout now</a> or <a href="/upload">go to upload tool</a>
+<a href="/uploadscans/logout">logout now</a> or <a href="/uploadscans/upload">go to upload tool</a>
 """
 
         # form w/ username and password
@@ -112,13 +113,13 @@ class login:
 
         else:
             session.loggedin = True
-            raise web.seeother('/upload')
+            raise web.seeother('/uploadscans/upload')
 
 class logout:
 
     def GET(self):
         session.loggedin = False
-        raise web.seeother('/login')
+        raise web.seeother('/uploadscans/login')
 
 
 class uploadtool: 
@@ -143,7 +144,7 @@ class uploadtool:
     def GET(self):
 
         if not logged_in():
-            raise web.seeother('/login')
+            raise web.seeother('/uploadscans/login')
 
         params = web.input(msg="")
 
@@ -153,7 +154,7 @@ class uploadtool:
     def POST(self): 
 
         if not logged_in():
-            raise web.seeother('/login')
+            raise web.seeother('/uploadscans/login')
 
         params = web.input(msg="")
 
@@ -183,7 +184,7 @@ class uploadtool:
             elif infilename.lower().endswith('tiff'):
                 filetype = 'tiff'
             else:
-                raise web.seeother('/upload?msg=Unrecognized file type! I know pdf and tiff.')
+                raise web.seeother('/uploadscans/upload?msg=Unrecognized file type! I know pdf and tiff.')
 
             ## TODO -- determine whether questionnaire is pdf or tiff...
             fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + '.' + filetype
@@ -194,7 +195,7 @@ class uploadtool:
 
             quests.remove(form['Questionario'].value)
 
-            raise web.seeother('/upload?msg=Upload sucessful.')
+            raise web.seeother('/uploadscans/upload?msg=Upload sucessful.')
 
 
 if __name__=="__main__":

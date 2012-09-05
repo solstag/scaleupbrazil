@@ -190,10 +190,10 @@ if __name__ == "__main__":
 	# test code
 	db = connect_to_database()
 
+	# NB: don't run this on the live server! we don't want username/
+	# passwords that are visible via github, obviously
 	insert_user(db, 'testuser', 'testpass')
-
 	check_user(db, 'testuser', 'testpass')
-
 	check_user(db, 'testuser', 'fakepass')
 
 	#diffs = get_diffs("~/.scaleupbrazil/diffs.csv")
