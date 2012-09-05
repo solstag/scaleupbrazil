@@ -60,5 +60,11 @@ http://poppler.freedesktop.org/
 
 $ sudo pip install pymongo
 
+* 'bcrypt' for handling passwords
+
+$ sudo pip install py-bcrypt
+
+
+
 
 

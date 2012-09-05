@@ -44,7 +44,7 @@ application = app.wsgifunc()
 # http://stackoverflow.com/questions/7382886/session-in-webpy-getting-username-in-all-classes
 # without this, the session resets every time a new page is viewed (as far as i can tell)
 if web.config.get('_session') is None:
-    store = web.session.DiskStore('sessions')
+    store = web.session.DiskStore('~/.scaleupbrazil/sessions')
     session = web.session.Session(app, 
                                   store,
                                   initializer={'loggedin': False, 'privilege': 0})
