@@ -6,10 +6,10 @@ import web
 from web import form, safewrite
 import sys, os, datetime, json
 
-# TODO - for now, this seems to work for getting the
-# captricityTransfer library into the search path
-# (but there must be a better way?)
-sys.path.append(os.getcwd() + "/../")
+# see http://code.google.com/p/modwsgi/wiki/ApplicationIssues
+# for advice on how to handle mod_wsgi application working directories
+thisdir = os.path.dirname(__file__)
+sys.path.append(os.path.join(thisdir, ".."))
 
 import captricityTransfer as ct
 import captricityDatabase as cd
