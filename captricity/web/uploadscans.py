@@ -112,13 +112,13 @@ class login:
 
         else:
             session.loggedin = True
-            raise web.seeother('/uploadscans/upload')
+            raise web.seeother('/upload')
 
 class logout:
 
     def GET(self):
         session.loggedin = False
-        raise web.seeother('/uploadscans/login')
+        raise web.seeother('/login')
 
 
 class uploadtool: 
