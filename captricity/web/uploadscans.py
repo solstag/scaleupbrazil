@@ -30,7 +30,6 @@ if not (os.path.isdir(save_dir)):
 db = cd.connect_to_database()
 
 urls = ('/', 'uploadtool',
-        '/uploadscans', 'uploadtool',
         '/uploadscans/login', 'login',
         '/uploadscans/logout', 'logout',
         '/uploadscans/upload', 'uploadtool',
