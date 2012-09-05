@@ -153,7 +153,7 @@ class uploadtool:
     def POST(self): 
 
         if not logged_in():
-            raise web.seeother('/uploadscans/login')
+            raise web.seeother('/login')
 
         params = web.input(msg="")
 
@@ -183,7 +183,7 @@ class uploadtool:
             elif infilename.lower().endswith('tiff'):
                 filetype = 'tiff'
             else:
-                raise web.seeother('/uploadscans/upload?msg=Unrecognized file type! I know pdf and tiff.')
+                raise web.seeother('/upload?msg=Unrecognized file type! I know pdf and tiff.')
 
             ## TODO -- determine whether questionnaire is pdf or tiff...
             fn = path.expanduser(save_dir) + '/' + form['Questionario'].value + '.' + filetype
@@ -194,7 +194,7 @@ class uploadtool:
 
             quests.remove(form['Questionario'].value)
 
-            raise web.seeother('/uploadscans/upload?msg=Upload sucessful.')
+            raise web.seeother('/upload?msg=Upload sucessful.')
 
 
 if __name__=="__main__":
