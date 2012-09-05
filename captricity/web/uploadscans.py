@@ -36,6 +36,9 @@ urls = ('/', 'uploadtool',
         '/toupload', 'toupload')
 
 app = web.application(urls, globals())
+# use mod_wsgi and apache for live server
+# see http://webpy.org/install#apache
+application = app.wsgifunc()
 
 # got this tip from
 # http://stackoverflow.com/questions/7382886/session-in-webpy-getting-username-in-all-classes
