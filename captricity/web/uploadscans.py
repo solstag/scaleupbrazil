@@ -143,7 +143,7 @@ class uploadtool:
     def GET(self):
 
         if not logged_in():
-            raise web.seeother('/uploadscans/login')
+            raise web.seeother('/login')
 
         params = web.input(msg="")
 
