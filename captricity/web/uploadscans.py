@@ -30,10 +30,10 @@ if not (os.path.isdir(save_dir)):
 db = cd.connect_to_database()
 
 urls = ('/', 'uploadtool',
-        '/uploadscans/login', 'login',
-        '/uploadscans/logout', 'logout',
-        '/uploadscans/upload', 'uploadtool',
-        '/uploadscans/toupload', 'toupload')
+        '/login', 'login',
+        '/logout', 'logout',
+        '/upload', 'uploadtool',
+        '/toupload', 'toupload')
 
 app = web.application(urls, globals())
 # use mod_wsgi and apache for live server
