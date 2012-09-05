@@ -14,7 +14,7 @@ sys.path.append(os.path.join(thisdir, ".."))
 import captricityTransfer as ct
 import captricityDatabase as cd
 
-render = web.template.render('templates/')
+render = web.template.render(os.path.join(thisdir, 'templates/'))
 
 # get today's date for use with directory structure...
 today = datetime.datetime.now()
