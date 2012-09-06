@@ -1,68 +1,34 @@
 scaleupbrazil/captricity
 ========================
 
-This directory has scripts related to using Captricity to convert scanned survey forms into datasets for analysis.
+This directory has scripts related to using Captricity to convert scanned survey forms 
+into datasets for analysis. 
 
-The Captricity API token should be in a file in your home directory called:
+There are several different sub-projects; broadly, the first few of these encompass
+getting Captricity to turn scanned survey forms into an electronic dataset:
 
-~/.scaleupbrazil/captricity-token
+* upload scanned survey forms to our server
+* prepare uploaded survey by rotating, resizing, converting to jpg
+* route each survey through the Captricity API, using different templates based
+  on our survey's skip patterns (to save money)
+* download the resulting datasets
 
-The scripts will look for the scanned survey forms under the directory:
+Once we have an electronic dataset from Captricity, we compare it to the results from
+the hand-entered dataset. This will yield a list of questionnaires and items where
+the two sources differ. In order to resolve these differences, we need
 
-~/.scaleupbrazil/scanned-forms
+* an adjudication app which presents a third person with each disputed item to get a
+  third entry
+* a final decision app which will let members of the study team personally decide
+  what value results from cases where all three sources (captricity, manual entry,
+  and the adjudicator)
+  
+Finally, as a background to all of these tasks, there are some tools which will be used
+to track each questionnaire's progress through this process.
 
-Do not include scanned forms in the repository as it wouldn't be appropriate to release them to the public.
+We're in the process of moving more detailed documentation to the wiki (TODO LINK).
 
-Also, the upload scans tools will save the survey forms in the directory
 
-~/.scaleupbrazil/scanned-forms/raw-scans/YYYYMMDD
-
-where YYYYMMDD is the day's date
-
-The JSON document which describes different possible paths through the survey (due, for example, to skip patterns), should be in
-
-~/.scaleupbrazil/template-ids.json
-
-The root directory for scanned survey forms, and where intermediate .jpg images will be created, is (probably a symlink)
-
-~/.scaleupbrazil/scanned-forms
-
-Datasets that get downloaded will be stored in the directory 
-
-~/.scaleupbrazil/downloaded-data
-
-Information about the database to use should be in 
-
-[TODO -- WORKING ON THIS]
-
-Software requirements
----------------------
-
-For the prepare-images.py script, you need:
-
-* the Python Image Library (PIL)
-
-Assuming you have pip installed, you can install PIL with
-
-$ sudo pip install PIL
-
-http://www.pythonware.com/library/pil/handbook/image.htm
-
-* 'convert' from the ImageMagick suite
-
-http://imagemagick.org/
-
-* 'pdfimages' from the Poppler PDF rendering library
-
-http://poppler.freedesktop.org/
-
-* 'pymongo' for interacting with MongoDB
-
-$ sudo pip install pymongo
-
-* 'bcrypt' for handling passwords
-
-$ sudo pip install py-bcrypt
 
 
 
