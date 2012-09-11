@@ -20,10 +20,10 @@ db = pymongo.Connection().captools
 render = web.template.render('templates/')
 
 urls = ('/', 'index',
-        '/qbrowser/(\d{2}_\d{5})', 'questionnaire_id',
-        '/qbrowser/diffs/(\d{2}_\d{5})', 'questionnaire_diffs',        
-        '/qbrowser/(\d{7}\d*)', 'shred_test',
-        '/qbrowser/shred/(\d{7}\d*)', 'shred_image')
+        '/adju/(\d{2}_\d{5})', 'questionnaire_id',
+        '/adju/diffs/(\d{2}_\d{5})', 'questionnaire_diffs',        
+        '/adju/(\d{7}\d*)', 'shred_test',
+        '/adju/shred/(\d{7}\d*)', 'shred_image')
 app = web.application(urls, globals())
 
 # this is the form object for a single diff which
