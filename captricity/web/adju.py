@@ -12,6 +12,8 @@ import sys, pymongo
 #   * add user login / logout (and sessions, etc)
 #   * add post method / backend code for registering diffs
 #   * flesh out db schema / strategy in more detail
+#   * think about syncronization and multiple use
+#   * add nf design comments
 
 
 # TODO - for now, this seems to work for getting the
