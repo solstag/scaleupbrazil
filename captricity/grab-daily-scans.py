@@ -2,6 +2,7 @@
 #
 # grab a day's worth of uploaded scans and 
 import sys, os, re, argparse, datetime
+
 #import captools.api
 #from captools.api import ThirdPartyApplication, Client
 from captricityTransfer import *
