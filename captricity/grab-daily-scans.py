@@ -1,14 +1,11 @@
 #! /usr/bin/env python
-#
-# grab a day's worth of uploaded scans and 
-import sys, os, re, argparse, datetime
 
-#import captools.api
-#from captools.api import ThirdPartyApplication, Client
+import sys
+import os
+import re
+import argparse
+import datetime
 from captricityTransfer import *
-
-# TODO -- this should be able to be run in info mode, just to give
-#         the status...
 
 # TODO -- assert / figure out last time R script to get info from Vargas dataset
 #         was run...
@@ -18,7 +15,7 @@ rawdir = "TODO"
 outdir = "TODO"
 
 def main():
-  parser = argparse.ArgumentParser(description='Grab and process the latest set of scans')
+  parser = argparse.ArgumentParser(description='Grab the latest set of scans, pre-process them, and then send them through Captricity.')
   
   parser.add_argument('-d', '--date', action="store",
                       dest="date", 
