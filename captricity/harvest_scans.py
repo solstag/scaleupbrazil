@@ -59,8 +59,8 @@ def main():
   print 'moving files into collected raw pdfs directory:'
   print outdir
   for f in allpdfs:
-    print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
-    #shutil.copy(f, os.path.join(outdir, os.path.basename(f))      
+    #print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
+    shutil.copy(f, os.path.join(outdir, os.path.basename(f)))
 
 main()
 
