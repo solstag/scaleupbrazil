@@ -2,11 +2,11 @@
 # coding: utf-8
 
 """
-   start_jobs
+   prep_scans
    ~~~~~~~~~~
 
-   command-line utility which takes prepped versions of uploaded scans
-   (the output of prep_scans.py) and creates jobs for them on Captricity
+   command-line utility which takes raw scans (the output of harvest_scans.py)
+   and prepares them for uploading to Captricity
 """
 
 import sys
@@ -21,7 +21,7 @@ rawdir = "TODO"
 outdir = "TODO"
 
 def main():
-  parser = argparse.ArgumentParser(description='Send scans that have been pre-processed by  through Captricity.')
+  parser = argparse.ArgumentParser(description='Grab the latest set of scans, pre-process them, and then send them through Captricity.')
   
   parser.add_argument('-d', '--date', action="store",
                       dest="date", 

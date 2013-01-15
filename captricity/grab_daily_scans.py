@@ -2,14 +2,12 @@
 # coding: utf-8
 
 """
-
    grab_daily_scans
    ~~~~~~~~~~~~~~~~
 
    command-line utility which takes scans uploaded to the ftp server,
    and moves them from different scanners' accounts into one central
    directory
-
 """
 
 import sys
@@ -18,9 +16,6 @@ import re
 import argparse
 import datetime
 from captricityTransfer import *
-
-# TODO -- assert / figure out last time R script to get info from Vargas dataset
-#         was run...
 
 # TODO -- read these from a configuration file
 rawdir = "TODO"

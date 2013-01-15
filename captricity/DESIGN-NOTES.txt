@@ -63,6 +63,8 @@ At various points the scripts will look for the following things in the configur
 * captricity-vargas-diffs.csv : a symlink to a .csv file which has the questionnaire ids and variable names of items where
   captricity and vargas produced different answers. this file should be cumulative (ie, it should have all questions where
   there was ever a diff, rather than all questions with unresolved diffs)
+* rawscandirs : a file that has the directories where we should look for raw uploaded scans (one directory per line)
+* collectedrawpdfs : a symlink to the directory where raw scans should be copied
 
 data directories
 ----------------
