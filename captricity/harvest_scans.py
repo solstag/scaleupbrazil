@@ -21,7 +21,7 @@ from captricityTransfer import *
 configfile = os.path.expanduser("~/.scaleupbrazil/rawscandirs")
 outdir = os.path.expanduser("~/.scaleupbrazil/collectedrawpdfs")
 
-def grab_filenames(topdir, regex = "\\.md$"):
+def grab_filenames(topdir, regex = "\\.pdf$"):
   """
   grab all of files whose names match a given pattern below a given root directory
 
@@ -53,7 +53,7 @@ def main():
   # get the path of all of the PDFs in the raw scan upload directories
   for thisdir in indirs:
     print 'grabbing files from ', thisdir
-    allpdfs.extend(grab_filenames(os.path.expanduser(thisdir)))
+    allpdfs.extend(grab_filenames(os.path.expanduser(thisdir), "\\.pdf$"))
 
   # copy each file into the collected raw pdfs directory
   print 'moving files into collected raw pdfs directory:'
