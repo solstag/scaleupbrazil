@@ -17,6 +17,8 @@ import re
 import argparse
 import datetime
 from captricityTransfer import *
+#from captricityTransfer.captricityTransfer import *
+#from captricityTransfer.sample import *
 
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
@@ -37,9 +39,48 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
 
   return res
 
+def is_survey_scan(filename, cblookup):
+  """
+  determine whether or not the given filename is well-formed for a survey scan
+
+  for now, there will be two types of survey scans: individual questionnaires and
+  fico de campos. the individual questionnaires will match the format
+
+    [15-digit census block id]_quest[5-digit id].[pdf|tiff]
+  
+  while the fichas de campo will match
+  
+    [15-digit census block id].[pdf|tiff]
+  
+    -OR-
+  
+    [15-digit census block id]_id[2 digits].[pdf|tiff]
+
+  Args:
+    filename: the filename to check
+    cblookup: the census block lookup table, to be sure the given census block
+              should be in the sample (see load_censusblocks())
+
+  Returns:
+    True if filename is a valid name for a survey scan; False otherwise
+  """
+  fn, ext = os.path.splitext(os.path.basename(filename))
+
+  if not re.search("[pdf|tiff]", ext, re.IGNORECASE):
+    return False
+
+  if not re.search("\d{15}[_quest|_id|_id\d{2}]?", fn, re.IGNORECASE):
+    return False
+
+  if not cblookup.is_valid_censusblock(fn[:15]):
+    return False
+
+  return True
+
 def main():
 
-  dirs = get_scan_dirs()
+  dirs = config.get_scan_dirs()
+  cblookup = sample.CensusBlockLookup()
 
   indirs = dirs["scanner_directories"]
   outdir = dirs["collected_raw_pdfs"]
@@ -55,8 +96,12 @@ def main():
   print 'moving files into collected raw pdfs directory:'
   print outdir
   for f in allpdfs:
-    #print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
-    shutil.copy(f, os.path.join(outdir, os.path.basename(f)))
+
+    if is_survey_scan(f, cblookup):
+      print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
+      #shutil.copy(f, os.path.join(outdir, os.path.basename(f)))
+    else:
+      print 'NO COPY - ', f, 'is not a survey scan'
 
 main()
 
