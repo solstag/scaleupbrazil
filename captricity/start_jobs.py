@@ -7,7 +7,9 @@
 
    command-line utility which takes prepped versions of uploaded scans
    (the output of prep_scans.py) and creates jobs for them on Captricity
-"""
+
+   NOT YET WRITTEN -- NEED TO CHANGE CODE BELOW
+   """
 
 import sys
 import os

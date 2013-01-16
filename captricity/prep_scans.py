@@ -7,6 +7,8 @@
 
    command-line utility which takes raw scans (the output of harvest_scans.py)
    and prepares them for uploading to Captricity
+
+   NOT YET WRITTEN -- NEED TO CHANGE CODE BELOW
 """
 
 import sys

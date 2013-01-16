@@ -8,7 +8,10 @@
    command-line utility which takes scans uploaded to the ftp server,
    and moves them from different scanners' accounts into one central
    directory
-"""
+
+   MOST FUNCTIONALITY HAS BEEN MOVED ELSEWHERE; FIGURE OUT WHETHER OR
+   NOT WE NEED TO KEEP THIS
+   """
 
 import sys
 import os

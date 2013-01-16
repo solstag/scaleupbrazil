@@ -1,3 +1,9 @@
+immediate / next
+----------------
+* clearly define expected filetypes and only move scans that match;
+  generate report for others
+* eventually, change harvest_scans so that it moves instead of copies
+
 micro
 -----
 * be sure that date/time stamps use UTC, not local time zones...

@@ -18,9 +18,6 @@ import argparse
 import datetime
 from captricityTransfer import *
 
-configfile = os.path.expanduser("~/.scaleupbrazil/rawscandirs")
-outdir = os.path.expanduser("~/.scaleupbrazil/collectedrawpdfs")
-
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
   grab all of files whose names match a given pattern below a given root directory
@@ -42,11 +39,10 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
 
 def main():
 
-  try:
-    indirs = open(configfile).read().splitlines()
-  except:
-    print 'ERROR opening configuration file ', configfile
-    sys.exit()
+  dirs = get_scan_dirs()
+
+  indirs = dirs["scanner_directories"]
+  outdir = dirs["collected_raw_pdfs"]
 
   allpdfs = []
 
