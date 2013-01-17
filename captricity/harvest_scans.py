@@ -16,9 +16,9 @@ import shutil
 import re
 import argparse
 import datetime
+import logging
+import logging.config
 from captricityTransfer import *
-#from captricityTransfer.captricityTransfer import *
-#from captricityTransfer.sample import *
 
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
@@ -64,6 +64,7 @@ def is_survey_scan(filename, cblookup):
   Returns:
     True if filename is a valid name for a survey scan; False otherwise
   """
+
   fn, ext = os.path.splitext(os.path.basename(filename))
 
   if not re.search("[pdf|tiff]", ext, re.IGNORECASE):
@@ -79,29 +80,47 @@ def is_survey_scan(filename, cblookup):
 
 def main():
 
+  logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
+  logger = logging.getLogger("scan")
+  logger.propagate = False
+
+  logger.info('harvest_scans started')
+
   dirs = config.get_scan_dirs()
   cblookup = sample.CensusBlockLookup()
 
   indirs = dirs["scanner_directories"]
   outdir = dirs["collected_raw_pdfs"]
+  errdir = dirs["scan_error"]
 
   allpdfs = []
 
   # get the path of all of the PDFs in the raw scan upload directories
   for thisdir in indirs:
-    print 'grabbing files from ', thisdir
+    logger.info('grabbing files from %s' % thisdir)
     allpdfs.extend(grab_filenames(os.path.expanduser(thisdir), "\\.pdf$"))
 
   # copy each file into the collected raw pdfs directory
-  print 'moving files into collected raw pdfs directory:'
-  print outdir
+  print 'moving files into collected raw pdfs directory:', outdir
+  errcount = 0
   for f in allpdfs:
 
     if is_survey_scan(f, cblookup):
-      print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
-      #shutil.copy(f, os.path.join(outdir, os.path.basename(f)))
+      logger.info('COPY %s to %s' % (f, os.path.join(outdir, os.path.basename(f))))
+      #shutil.copy(f, outdir)
+      # we may eventually want to move the scans instead of copying them
+      #shutil.move(f, outdir)      
     else:
-      print 'NO COPY - ', f, 'is not a survey scan'
+      logger.error('NO COPY - %s is not a survey scan; moved to error directory' % f)
+      #shutil.copy(f, errdir)
+      # we may eventually want to move the scans instead of copying them
+      #shutil.move(f, errdir)      
+      errcount += 1
+
+  if errcount > 0:
+    print "there were", errcount, "files that couldn't be moved; check the log for more information."
+
+  logger.info('harvest_scans finished [errcount = %s]' % str(errcount))
 
 main()
 

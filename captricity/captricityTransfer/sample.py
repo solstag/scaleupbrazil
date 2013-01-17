@@ -7,6 +7,7 @@ classes and functions related to interacting with the Brazil study sample
 import sys
 import os
 import csv
+import logging
 
 class CensusBlockLookup:
 	"""

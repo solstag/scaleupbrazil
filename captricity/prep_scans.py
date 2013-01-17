@@ -16,30 +16,20 @@ import os
 import re
 import argparse
 import datetime
+import logging
+import logging.config
 from captricityTransfer import *
 
-# TODO -- read these from a configuration file
-rawdir = "TODO"
-outdir = "TODO"
-
 def main():
-  parser = argparse.ArgumentParser(description='Grab the latest set of scans, pre-process them, and then send them through Captricity.')
-  
-  parser.add_argument('-d', '--date', action="store",
-                      dest="date", 
-                      default=datetime.datetime.today().strftime("%Y%m%d"),
-                      help="date to use for output directory (defaults to today; format: YYYYMMDD)")
-  parser.add_argument('-m', '--money', action="store_true",
-                      dest="money_ok", 
-                      default=False,
-                      help="OK to use money to start processing the images")
-  parser.add_argument('-J', '--nojobs', action="store_true",
-                      dest="no_jobs", 
-                      default=False,
-                      help="Don't create jobs, only process scans to jpgs")
 
-  args = parser.parse_args()
- 
+  logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
+  logger = logging.getLogger("scan")
+  logger.propagate = False
+
+  logger.info('prep_scans started')
+
+  dirs = config.get_scan_dirs()
+
   # TODO -- think about this more: what if we need to run more than once in
   #         a given day?
 
