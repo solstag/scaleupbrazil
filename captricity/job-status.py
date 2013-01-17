@@ -18,10 +18,11 @@ import sys
 import os
 import re
 import argparse
-import captools.api
+#import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
+from captricityTransfer.captricityTransfer import *
 
 def main():
   parser = argparse.ArgumentParser(description='Check the status of Captricity jobs')
@@ -52,6 +53,7 @@ def main():
                   only_incomplete=args.only_incomplete,
                   name_pattern=args.name_pattern)
   for job in jobs:
+      #import pdb; pdb.set_trace()
       print job['name']
       print '\tstatus:', job['status']
       print '\tinstance set count:', job['instance_set_count']
@@ -61,7 +63,7 @@ def main():
           print '\tpct complete:', job['percent_completed']
       elif job['finished'] != "None":
           print '\tfinished:', job['finished']            
-          print '\tdocument:', job['document']['name'], '( id:', job['document']['id'], ')'
+          print '\tdocument id:', job['document_id']
       print '\tjob id:', job['id']
 
 main()

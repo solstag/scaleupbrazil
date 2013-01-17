@@ -118,7 +118,7 @@ def main():
       errcount += 1
 
   if errcount > 0:
-    print "there were", errcount, "files that couldn't be moved; check the log for more information."
+    print "there were", errcount, "files that appear to be errors; check the log for more information."
 
   logger.info('harvest_scans finished [errcount = %s]' % str(errcount))
 
