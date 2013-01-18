@@ -1,28 +1,21 @@
 #!/usr/bin/env python
+"""
+job_status.py
+~~~~~~~~~~~~~
 
-#####################################################################
-# job-status.py
-#
-# helper utility which gets the status of all of the jobs...
-#
-# TODO - eventually, should take a pattern in job names
-#        to match against
-#
-# see:
-#   https://shreddr.captricity.com/developer/quickstart/
-#
-# also, the examples in the captools library are useful
-#
+helper utility which gets the status of all of the jobs...
+
+see:
+  https://shreddr.captricity.com/developer/quickstart/
+
+also, the examples in the captools library are useful
+"""
 
 import sys
 import os
 import re
 import argparse
-#import captools.api
-from captools.api import ThirdPartyApplication
-from captools.api import Client
-from captricityTransfer import *
-from captricityTransfer.captricityTransfer import *
+from secondEntry.apicomm import *
 
 def main():
   parser = argparse.ArgumentParser(description='Check the status of Captricity jobs')
@@ -42,18 +35,15 @@ def main():
 
   args = parser.parse_args()
     
-  api_token=get_token()
-  client = Client(api_token)
+  client = ScanClient()
 
   print 'Jobs:'
 
-  jobs = get_jobs(client,
-                  since_date=args.since_date,
-                  only_complete=args.only_complete,
-                  only_incomplete=args.only_incomplete,
-                  name_pattern=args.name_pattern)
+  jobs = client.get_jobs(since_date=args.since_date,
+                         only_complete=args.only_complete,
+                         only_incomplete=args.only_incomplete,
+                         name_pattern=args.name_pattern)
   for job in jobs:
-      #import pdb; pdb.set_trace()
       print job['name']
       print '\tstatus:', job['status']
       print '\tinstance set count:', job['instance_set_count']
@@ -66,4 +56,5 @@ def main():
           print '\tdocument id:', job['document_id']
       print '\tjob id:', job['id']
 
-main()
+if "__name__" == "__main__":
+  main()

@@ -30,16 +30,14 @@ def main():
 
   dirs = config.get_scan_dirs()
 
-  # TODO -- think about this more: what if we need to run more than once in
-  #         a given day?
+  router = secondEntry.Router()
 
-  # TODO - process the pdfs/tiffs into jpgs...
-
-  # TODO - remove the processed pdfs
+  # figure out which paths the questionnaires we have need to take through Captricity
+  questionnaire_ids = router.questionnaires_in_dir(TODO)
 
   # for the questionnaires that we converted, figure out which paths they take through
   # the survey and get jobs ready to process them
-  questionnaire_ids = questionnaires_in_dir(outdir)
+
   templates, template_page_dict = prep_questionnaire_jobs(questionnaire_id_list=questionnaire_ids)
 
   if not no_jobs:

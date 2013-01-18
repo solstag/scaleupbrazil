@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # coding: utf-8
-
 """
    harvest_scans
    ~~~~~~~~~~~~~
@@ -18,7 +17,8 @@ import argparse
 import datetime
 import logging
 import logging.config
-from captricityTransfer import *
+from secondEntry import *
+from secondEntry.router import *
 
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
@@ -39,45 +39,6 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
 
   return res
 
-def is_survey_scan(filename, cblookup):
-  """
-  determine whether or not the given filename is well-formed for a survey scan
-
-  for now, there will be two types of survey scans: individual questionnaires and
-  fico de campos. the individual questionnaires will match the format
-
-    [15-digit census block id]_quest[5-digit id].[pdf|tiff]
-  
-  while the fichas de campo will match
-  
-    [15-digit census block id].[pdf|tiff]
-  
-    -OR-
-  
-    [15-digit census block id]_id[2 digits].[pdf|tiff]
-
-  Args:
-    filename: the filename to check
-    cblookup: the census block lookup table, to be sure the given census block
-              should be in the sample (see load_censusblocks())
-
-  Returns:
-    True if filename is a valid name for a survey scan; False otherwise
-  """
-
-  fn, ext = os.path.splitext(os.path.basename(filename))
-
-  if not re.search("[pdf|tiff]", ext, re.IGNORECASE):
-    return False
-
-  if not re.search("\d{15}[_quest|_id|_id\d{2}]?", fn, re.IGNORECASE):
-    return False
-
-  if not cblookup.is_valid_censusblock(fn[:15]):
-    return False
-
-  return True
-
 def main():
 
   logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
@@ -87,7 +48,8 @@ def main():
   logger.info('harvest_scans started')
 
   dirs = config.get_scan_dirs()
-  cblookup = sample.CensusBlockLookup()
+  
+  #cblookup = sample.CensusBlockLookup()
 
   indirs = dirs["scanner_directories"]
   outdir = dirs["collected_raw_pdfs"]
@@ -105,13 +67,14 @@ def main():
   errcount = 0
   for f in allpdfs:
 
-    if is_survey_scan(f, cblookup):
-      logger.info('COPY %s to %s' % (f, os.path.join(outdir, os.path.basename(f))))
+    try:
+      sf = ScanFile(f)
+      logger.info('COPY {} to {}'.format(sf.filename, os.path.join(outdir, os.path.basename(f))))
       #shutil.copy(f, outdir)
       # we may eventually want to move the scans instead of copying them
       #shutil.move(f, outdir)      
-    else:
-      logger.error('NO COPY - %s is not a survey scan; moved to error directory' % f)
+    except ValueError, err:
+      logger.error('NO COPY - {} is not a survey scan; moved to error directory; message: {}'.format(f, err.message))
       #shutil.copy(f, errdir)
       # we may eventually want to move the scans instead of copying them
       #shutil.move(f, errdir)      
@@ -122,7 +85,8 @@ def main():
 
   logger.info('harvest_scans finished [errcount = %s]' % str(errcount))
 
-main()
+if __name__ == "__main__":
+  main()
 
 
 
