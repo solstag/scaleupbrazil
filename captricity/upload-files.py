@@ -21,6 +21,7 @@ import captools.api
 from captools.api import ThirdPartyApplication
 from captools.api import Client
 from captricityTransfer import *
+from captricityTransfer.captricityTransfer import *
 
 def test_upload(client, date, jobname_prefix, spend_money=False):
 

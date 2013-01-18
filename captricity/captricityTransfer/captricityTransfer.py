@@ -375,7 +375,7 @@ def document_info(client):
   jobs = client.read_jobs()
   job_names = [x['name'] for x in jobs]
   job_ids = [x['id'] for x in jobs]  
-  job_docids = [x['document']['id'] for x in jobs]
+  job_docids = [x['document_id'] for x in jobs]
 
   return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))
 
