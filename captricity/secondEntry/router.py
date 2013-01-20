@@ -10,7 +10,7 @@ import os
 import csv
 import logging
 import re
-from secondEntry.sample import CensusBlockLookup
+from secondEntry.sample import CensusBlockLookup, SurveyPathLookup
 
 def get_template_map(template_file):
   """
@@ -59,9 +59,15 @@ class ScanFile(object):
           a ficha de campo, then id is None
     """
 
+    scan_fn_pat = "(\d{15})_?(quest\d{5}|id\d{2})?"
+
     cblookup = CensusBlockLookup()
+    svplookup = SurveyPathLookup()
 
     def __init__(self, file):
+        """
+        be sure to call the constructor with the full path and not just the filename
+        """
 
         self.dir = os.path.dirname(file)
         self.filename, self.ext = os.path.splitext(os.path.basename(file))
@@ -71,7 +77,7 @@ class ScanFile(object):
         if not re.search("[pdf|tiff]", self.ext, re.IGNORECASE):
             raise ValueError('{} does not appear to be a pdf or tiff'.format(file))
 
-        pat = re.match("(\d{15})_?([quest\d{5}|id\d{2}])?", self.filename, re.IGNORECASE)
+        pat = re.match(ScanFile.scan_fn_pat, self.filename, re.IGNORECASE)
 
         if pat is None:
             raise ValueError('{} does not appear to be a well-formed scan file'.format(file))
@@ -79,15 +85,24 @@ class ScanFile(object):
         self.censusblock = pat.groups()[0]
 
         thistype = pat.groups()[1]
+
         if thistype is None:
             self.type = "fichadecampo"
             self.id = None
         elif "id" in thistype:
             self.type = "contactsheet"
-            self.id = re.match("id(\d{5})", thistype).groups()[0]
+            self.id = re.match("id(\d{2})", thistype).groups()[0]
         elif "quest" in thistype:
             self.type = "questionnaire"
-            self.id = re.match("quest(\d{5})")
+            self.id = str(self.censusblock[:2]) + '_' + re.match("quest(\d{5})", thistype).groups()[0]
+            # be sure the questionnaire ID is valid (could be problem with the filename)
+            if not ScanFile.svplookup.is_valid_qid(self.id):
+                raise ValueError('{} does not appear to be a valid questionnaire id.'.format(self.id))
+
+            # and keep track of the survey path this questionnaire should take
+            self.survey_path = ScanFile.svplookup.lookup[self.id]
+        else:
+            raise ValueError('This filename does not seem to be of the required type ({})'.format(thistype))
 
         # figure out if this census block is valid
         if not ScanFile.cblookup.is_valid_censusblock(self.censusblock):
@@ -95,8 +110,6 @@ class ScanFile(object):
 
         self.blocktype = ScanFile.cblookup.cbs[self.censusblock]
 
-        # get the survey path we should take
-        # TODO
 
 
 
@@ -108,12 +121,7 @@ class Router(object):
 
         ## TODO - read configuration file...
 
-        self.survey_paths = get_survey_paths(os.path.join(self.configdir, 'survey-paths-for-captricity.csv'))
-        self.template_map = get_template_map(os.path.join(self.configdir, 'template-ids.json'))
-
-        ## TODO -- error if can't read configuration...
-
-    def stage(image_directory, qtypes=["individual"]):
+    def stage(self, image_directory, qtypes=["individual"]):
         """
         route the scanned images in a given directory to appropriate staging
         directories and figure out which paths they should take through captricity
@@ -132,21 +140,27 @@ class Router(object):
 
         pass #TODO              
 
-    def questionnaires_in_dir(image_directory, pattern="(quest_)([\d|_]+)"):
+    def questionnaires_in_dir(self, image_directory, pattern=ScanFile.scan_fn_pat):
       """
       given a directory and a file pattern, return a list of the questionnaires whose images
       are in the directory
       """
 
-      ## TODO -- write this so that we can eventually add hh roster, etc, without much extra effor
-      ## TODO -- change all this to parse questionnaire type, etc...
-
       files = os.listdir(os.path.expanduser(image_directory))
 
-      files = filter( lambda x: bool(re.search(pattern, x)), files )
-      files = set([ re.search(pattern,x).group(2) for x in files ])
+      okfiles = filter(lambda x: re.match(pattern, x), files)
 
-      return files
+      resfiles = []
+
+      for f in okfiles:
+        try:
+            thissf = ScanFile(f)
+            resfiles.append(thissf)
+        except BaseException, obj:
+            print 'error converting ', f, ':', obj.message
+            pass
+
+      return resfiles
 
     def stage_files(questionnaire_ids):
 

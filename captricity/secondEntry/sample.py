@@ -9,6 +9,46 @@ import os
 import csv
 import logging
 
+class SurveyPathLookup(object):
+	"""
+	lookup table for info about survey paths for each interview
+	"""
+
+	def __init__(self, filename="~/.scaleupbrazil/survey-paths-for-captricity.csv"):
+		  """
+		  load a .csv file that describes which paths each interview took through
+		  the survey. this tells us which of the templates we should apply.
+
+		  the questionnaire IDs have the format
+		    [2-digit state number]_[5-digit questionnaire ID]
+
+		  Args:
+		    filename: the .csv file containing the survey paths, produced by
+		              auto-template-for-captricity.r
+		  """
+
+		  self.lookup = {}
+
+		  try:
+		    infile = open(os.path.expanduser(filename), 'r')
+		    incsv = csv.DictReader(infile)
+		    for x in incsv:
+		      self.lookup[x['id']] = x
+		    infile.close()
+		  except BaseException, msg:
+		    print "ERROR reading survey path file ", filename, ":", msg.message
+		    sys.exit()
+
+	def is_valid_qid(self, qid):
+		"""
+		check whether or not a given questionnaire ID is in the dataset
+		(uses the output of auto-template-for-captricity.r)
+		"""
+
+		if qid in self.lookup.keys():
+			return True
+		return False
+
 class CensusBlockLookup(object):
 	"""
 	lookup table for info about census blocks in our sample
@@ -39,8 +79,8 @@ class CensusBlockLookup(object):
 		    for x in incsv:
 		      self.cbs[x['census_block']] = int(x['status'])
 		    infile.close()
-		  except:
-		    print "ERROR reading census block file ", filename
+		  except BaseException, msg:
+		    print "ERROR reading census block file ", filename, ":", msg.message
 		    sys.exit()
 
 	def is_valid_censusblock(self, cb):
