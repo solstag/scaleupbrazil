@@ -23,7 +23,7 @@ def get_scan_dirs(template_file="~/.scaleupbrazil/scan-directories.json"):
 
   return res
 
-def get_template_map(template_file):
+def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
   """
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
   """
