@@ -12,6 +12,9 @@ import logging
 import re
 from secondEntry.sample import CensusBlockLookup, SurveyPathLookup
 
+logger = logging.getLogger(__name__)
+logger.propagate = False
+
 def get_template_map(template_file):
   """
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
@@ -42,8 +45,6 @@ def get_survey_paths(svypath_file):
 
   return svy_paths
 
-## TODO -- add logging...
-
 class ScanFile(object):
     """
     description of a file containing a scanned survey document
@@ -69,6 +70,8 @@ class ScanFile(object):
         be sure to call the constructor with the full path and not just the filename
         """
 
+        # see http://docs.python.org/2/howto/logging-cookbook.html
+        # and http://stackoverflow.com/questions/7294127/python-cross-module-logging
         self.dir = os.path.dirname(file)
         self.filename, self.ext = os.path.splitext(os.path.basename(file))
         self.fullpath = file
@@ -110,8 +113,13 @@ class ScanFile(object):
 
         self.blocktype = ScanFile.cblookup.cbs[self.censusblock]
 
+    def split_pdf(self, dest_dir):
 
-
+        if self.type == "questionnaire":
+            logger.info('splitting {}'.format(self.filename))
+            # TODO
+        else:
+            logger.info('not splitting {}, since it is not a questionnaire.'.format(self.filename))
 
 class Router(object):
 
@@ -137,7 +145,6 @@ class Router(object):
         # go through each file in the amalgamated directory
         # ...create a ScanFile object for it and keep track of it based on type
 
-
         pass #TODO              
 
     def questionnaires_in_dir(self, image_directory, pattern=ScanFile.scan_fn_pat):
@@ -162,9 +169,10 @@ class Router(object):
 
       return resfiles
 
-    def stage_files(questionnaire_ids):
+    def stage_files(self, qs):
 
-        pass #TODO
+        for q in qs:
+            q.split_pdf('temp')
 
 
 
