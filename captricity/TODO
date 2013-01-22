@@ -1,8 +1,29 @@
 immediate / next
 ----------------
-* clearly define expected filetypes and only move scans that match;
-  generate report for others
+
+* bug tracking system
+  - add programmatic bug submission to certain errors -- look over and think about this...
+  - keeping detailed notes
+  - can't get email to work for now, but not a big deal
+* router.py or something else
+  - create jobs
+  - start jobs
+
+* ... (revisit code to download and evaluate results...)
+
+* LEFT OFF roundup -> i can get the demo to work, but it's proving difficult to configure
+  the rest of it...
+
+* NEXT finish going through upload-files and prepare-images; now that the API handles uploading
+  multipage pdf/tiff files, things may be quite a bit simpler...
+* should extend the ThirdPartyClient and make our own with ability to upload, etc...
+* REVISIT R code that figures out survey path based on questionnaire ID, etc
+* AUDIT existing templates and figure out what to use...
 * eventually, change harvest_scans so that it moves instead of copies
+
+* add issue tracker (possibly roundup http://roundup-tracker.org/); for example, 
+  when there are problems with scans, adjudication, etc...
+
 
 micro
 -----

@@ -16,7 +16,7 @@ def get_scan_dirs(template_file="~/.scaleupbrazil/scan-directories.json"):
     infile = open(os.path.expanduser(template_file), 'r')
     res = json.load(infile)
     infile.close()
-  except:
+  except Exception e:
     print "ERROR opening scan directory configuration file ", template_file
     sys.exit()
 
