@@ -11,9 +11,6 @@ immediate / next
 
 * ... (revisit code to download and evaluate results...)
 
-* LEFT OFF roundup -> i can get the demo to work, but it's proving difficult to configure
-  the rest of it...
-
 * NEXT finish going through upload-files and prepare-images; now that the API handles uploading
   multipage pdf/tiff files, things may be quite a bit simpler...
 * should extend the ThirdPartyClient and make our own with ability to upload, etc...
