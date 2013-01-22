@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # coding: utf-8
-
 """
    harvest_scans
    ~~~~~~~~~~~~~
@@ -16,7 +15,15 @@ import shutil
 import re
 import argparse
 import datetime
-from captricityTransfer import *
+import logging
+import logging.config
+
+logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
+logger = logging.getLogger("scan")
+logger.propagate = False
+
+from secondEntry import *
+from secondEntry.router import *
 
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
@@ -39,26 +46,50 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
 
 def main():
 
-  dirs = get_scan_dirs()
 
+  logger.info('harvest_scans started')
+
+  dirs = config.get_scan_dirs()
+  
   indirs = dirs["scanner_directories"]
   outdir = dirs["collected_raw_pdfs"]
+  errdir = dirs["scan_error"]
 
   allpdfs = []
 
   # get the path of all of the PDFs in the raw scan upload directories
   for thisdir in indirs:
-    print 'grabbing files from ', thisdir
+    logger.info('grabbing files from %s' % thisdir)
     allpdfs.extend(grab_filenames(os.path.expanduser(thisdir), "\\.pdf$"))
 
   # copy each file into the collected raw pdfs directory
-  print 'moving files into collected raw pdfs directory:'
-  print outdir
+  print 'moving files into collected raw pdfs directory:', outdir
+  errcount = 0
+  okcount = 0
   for f in allpdfs:
-    #print 'COPY ', f, ' to ', os.path.join(outdir, os.path.basename(f))
-    shutil.copy(f, os.path.join(outdir, os.path.basename(f)))
 
-main()
+    try:
+      sf = ScanFile(f)
+      logger.info('COPY {} to {}'.format(sf.filename, os.path.join(outdir, os.path.basename(f))))
+      shutil.copy(f, outdir)
+      # TODO we may eventually want to move the scans instead of copying them
+      #shutil.move(f, outdir)
+      okcount += 1 
+    except ValueError, err:
+      logger.error('NO COPY - {} is not a survey scan; moved to error directory; message: {}'.format(f, err.message))
+      shutil.copy(f, errdir)
+      # TODO we may eventually want to move the scans instead of copying them
+      #shutil.move(f, errdir)      
+      errcount += 1
+
+  print "successfully harvested", okcount, "scans."
+  if errcount > 0:
+    print "there were", errcount, "files that appear to be errors; check the log for more information."
+
+  logger.info('harvest_scans finished [errcount = {}; okcount = {}]'.format(errcount, okcount))
+
+if __name__ == "__main__":
+  main()
 
 
 

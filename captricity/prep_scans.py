@@ -16,40 +16,28 @@ import os
 import re
 import argparse
 import datetime
+import logging
+import logging.config
 from captricityTransfer import *
 
-# TODO -- read these from a configuration file
-rawdir = "TODO"
-outdir = "TODO"
-
 def main():
-  parser = argparse.ArgumentParser(description='Grab the latest set of scans, pre-process them, and then send them through Captricity.')
-  
-  parser.add_argument('-d', '--date', action="store",
-                      dest="date", 
-                      default=datetime.datetime.today().strftime("%Y%m%d"),
-                      help="date to use for output directory (defaults to today; format: YYYYMMDD)")
-  parser.add_argument('-m', '--money', action="store_true",
-                      dest="money_ok", 
-                      default=False,
-                      help="OK to use money to start processing the images")
-  parser.add_argument('-J', '--nojobs', action="store_true",
-                      dest="no_jobs", 
-                      default=False,
-                      help="Don't create jobs, only process scans to jpgs")
 
-  args = parser.parse_args()
- 
-  # TODO -- think about this more: what if we need to run more than once in
-  #         a given day?
+  logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
+  logger = logging.getLogger("scan")
+  logger.propagate = False
 
-  # TODO - process the pdfs/tiffs into jpgs...
+  logger.info('prep_scans started')
 
-  # TODO - remove the processed pdfs
+  dirs = config.get_scan_dirs()
+
+  router = secondEntry.Router()
+
+  # figure out which paths the questionnaires we have need to take through Captricity
+  questionnaire_ids = router.questionnaires_in_dir(TODO)
 
   # for the questionnaires that we converted, figure out which paths they take through
   # the survey and get jobs ready to process them
-  questionnaire_ids = questionnaires_in_dir(outdir)
+
   templates, template_page_dict = prep_questionnaire_jobs(questionnaire_id_list=questionnaire_ids)
 
   if not no_jobs:

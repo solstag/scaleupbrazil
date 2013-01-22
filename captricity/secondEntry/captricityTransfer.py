@@ -368,40 +368,25 @@ def get_vargas_questionnaires(qfile="~/.scaleupbrazil/survey-paths.csv"):
   return qids
 
 
-def document_info(client):
-  """Get information about all of the documents (templates) associated with
-     client's account. This is useful for figuring out which document ID
-     number is associated with a given job's document/template."""
-  jobs = client.read_jobs()
-  job_names = [x['name'] for x in jobs]
-  job_ids = [x['id'] for x in jobs]  
-  job_docids = [x['document']['id'] for x in jobs]
 
-  return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))
 
-def get_token():
-  """
-  get the captricity API token from a file in the ~/.scaleupbrazil directory
-  """
-  # TODO-EXCEPTION
-  token_file = open(os.path.expanduser('~/.scaleupbrazil/captricity-token'))
-  api_token = token_file.readlines()[0].strip()
-  token_file.close()
-  return api_token
 
-def new_job (client, document_id = 1969, job_name="api-test-job"):
-  """
-  create a new job, which is a document (template) and
-  one or many scanned-in surveys (image sets).
-  the default document_id, 1969, is the entire individual questionnaire
-  """
-  # TODO-EXCEPTION - check document exists
-  post_data = { 'document_id' : document_id }
-  job = client.create_jobs(post_data)
 
-  put_data = { 'name' : job_name }
-  job = client.update_job(job['id'], put_data)
-  return job
+
+
+
+
+def questionnaires_in_dir(image_directory, pattern="(quest_)([\d|_]+)"):
+  """
+  given a directory and a file pattern, return a list of the questionnaires whose images
+  are in the directory
+  """
+  files = os.listdir(os.path.expanduser(image_directory))
+
+  files = filter( lambda x: bool(re.search(pattern, x)), files )
+  files = set([ re.search(pattern,x).group(2) for x in files ])
+
+  return files
 
 def upload_questionnaires(client, job_id, questionnaire_ids, 
                           image_path, pages=xrange(22)):
@@ -451,18 +436,6 @@ def upload_questionnaires(client, job_id, questionnaire_ids,
       print "... page {} ({} of questionnaire)".format(page_number, pages[page_number])
     
   print "done."
-
-def questionnaires_in_dir(image_directory, pattern="(quest_)([\d|_]+)"):
-  """
-  given a directory and a file pattern, return a list of the questionnaires whose images
-  are in the directory
-  """
-  files = os.listdir(os.path.expanduser(image_directory))
-
-  files = filter( lambda x: bool(re.search(pattern, x)), files )
-  files = set([ re.search(pattern,x).group(2) for x in files ])
-
-  return files
 
 def download_job_data(client, job_ids):
   """
