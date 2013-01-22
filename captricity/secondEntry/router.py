@@ -71,6 +71,15 @@ def extract_pdf_pages(inpdf, outfile, pages):
     outpdf.write(outstream)
     outstream.close()
 
+def complain(title, msg, exceptiontype):
+    """
+    submit a bug report and then raise an exception
+    """
+
+    ScanFile.tracker.create_issue(title=title, message_text=msg)
+    raise exceptiontype(msg)
+
+
 class ScanFile(object):
     """
     description of a file containing a scanned survey document
@@ -106,14 +115,14 @@ class ScanFile(object):
 
         # figure out what type of file this is
         if not re.search("(pdf|tiff)", self.ext, re.IGNORECASE):
-            raise ValueError('{} does not appear to be a pdf or tiff'.format(file))
+            msg = '{} does not appear to be a pdf or tiff'.format(file)
+            complain("bad filetype", msg, ValueError)
 
         pat = re.match(ScanFile.scan_fn_pat, self.filename, re.IGNORECASE)
 
         if pat is None:
             msg = '{} does not appear to be a well-formed scan file.'.format(self.filename)
-            ScanFile.tracker.create_issue(title="invalid q id", message_text=msg, priority=10)            
-            raise ValueError('{} does not appear to be a well-formed scan file'.format(file))
+            complain("bad filename", msg, ValueError)
 
         self.censusblock = pat.groups()[0]
 
@@ -131,18 +140,19 @@ class ScanFile(object):
             # be sure the questionnaire ID is valid (could be problem with the filename)
             if not ScanFile.svplookup.is_valid_qid(self.id):
                 msg = '{} does not appear to be a valid questionnaire id.'.format(self.id)
-                ScanFile.tracker.create_issue(title="invalid q id", message_text=msg, priority=10)
-                raise ValueError('{} does not appear to be a valid questionnaire id.'.format(self.id))
+                complain("bad questionnaire id", msg, ValueError)
 
             # and keep track of the survey path this questionnaire should take
             self.survey_path = ScanFile.svplookup.lookup[self.id]
             del self.survey_path['id']
         else:
-            raise ValueError('This filename does not seem to be of the required type ({})'.format(thistype))
+            msg = 'This filename does not seem to be of the required type ({})'.format(thistype)
+            complain("wrong filename format", msg, ValueError)
 
         # figure out if this census block is valid
         if not ScanFile.cblookup.is_valid_censusblock(self.censusblock):
-            raise ValueError('{} does not appear to be from a valid census block in filename {}'.format(self.censusblock, file))
+            msg = '{} does not appear to be from a valid census block in filename {}'.format(self.censusblock, file)
+            complain("invalid census block", msg, ValueError)
 
         self.blocktype = ScanFile.cblookup.cbs[self.censusblock]
 
@@ -154,7 +164,8 @@ class ScanFile(object):
         try:
             thispdf = pyPdf.PdfFileReader(file(self.fullpath, 'rb'))
         except BaseException, msg:
-            raise BaseException('questionnaire {} does not have 22 pages!'.format(self.fullpath))
+            msg = 'error opening pdf file {} with pyPdf'.format(self.fullpath)
+            complain("problem opening pdf file", msg, BaseException)
 
         if self.type == "questionnaire":
 
@@ -163,7 +174,8 @@ class ScanFile(object):
             # http://www.quora.com/Which-Python-library-will-let-me-check-how-many-pages-are-in-a-PDF-file
             # (we're not doing this for now)
             if thispdf.getNumPages() != 22:
-                raise BaseException('questionnaire {} does not have 22 pages!'.format(self.fullpath))
+                msg = 'questionnaire {} does not have 22 pages!'.format(self.fullpath)
+                complain("wrong number of pages", msg, BaseException)
 
             logger.info('splitting {}'.format(self.filename))
 
@@ -179,7 +191,8 @@ class ScanFile(object):
 
         elif self.type == "fichadecampo":
             if thispdf.getNumPages() != 2:
-                raise BaseException('ficha de campo {} does not have 2 pages!'.format(self.fullpath))
+                msg = 'ficha de campo {} does not have 2 pages!'.format(self.fullpath)
+                complain("wrong number of pages", msg, BaseException)
 
             logger.info('copying {}'.format(self.filename))
 
@@ -189,7 +202,8 @@ class ScanFile(object):
 
         elif self.type == "contactsheet":
             if thispdf.getNumPages() != 2:
-                raise BaseException('contact sheet {} does not have 2 pages!'.format(self.fullpath))                
+                msg = 'contact sheet {} does not have 2 pages!'.format(self.fullpath)
+                complain("wrong number of pages", msg, BaseException)
 
             logger.info('copying {}'.format(self.filename))
 
@@ -197,7 +211,8 @@ class ScanFile(object):
             outfile = os.path.join(outdir, self.filename + '.pdf')
             shutil.copy(self.fullpath, outfile)
         else:
-            raise BaseException('file {} is of unknown type!'.format(self.fullpath))
+            msg = 'file {} is of unknown type!'.format(self.fullpath)
+            complain("unknown file type", msg, BaseException)
 
 class Router(object):
 
@@ -240,7 +255,9 @@ class Router(object):
       for bf in badfiles:
         shutil.copy(os.path.join(os.path.expanduser(image_directory),bf), self.scandirs['staging_error'])
         # TODO -- eventually move instead of copy
-        logger.error("{} is not a well-formed filename! Moving to staging error directory...".format(bf))        
+        msg = "{} is not a well-formed filename! Moving to staging error directory...".format(bf)
+        ScanFile.tracker.create_issue(title='bad filename', message_text=msg)
+        logger.error(msg)
 
       resfiles = []
 
@@ -249,9 +266,11 @@ class Router(object):
             thissf = ScanFile(os.path.join(os.path.expanduser(image_directory),f))
             resfiles.append(thissf)
         except BaseException, obj:
+            msg = 'error converting {} : {}'.format(f,obj.message)
             shutil.copy(os.path.join(os.path.expanduser(image_directory),f), self.scandirs['staging_error'])
             # TODO - eventually move instead of copy
-            logger.error('error converting {} : {}'.format(f,obj.message))
+            ScanFile.tracker.create_issue(title="error converting", message_text=msg)
+            logger.error(msg)
 
       return resfiles
 
@@ -271,7 +290,9 @@ class Router(object):
                 shutil.copy(q.fullpath, self.scandirs['staging_error'])
                 not_staged.append(q)
                 # TODO -- eventually move instead of copy
-                logger.error("ERROR splitting pdf {}: {}; moved to error directory".format(q.fullpath, msg.message))
+                msg = "ERROR splitting pdf {}: {}; moved to error directory".format(q.fullpath, msg.message)
+                ScanFile.tracker.create_issue(title="error splitting pdf", message_text=msg)
+                logger.error(msg)
 
         return staged, not_staged
 

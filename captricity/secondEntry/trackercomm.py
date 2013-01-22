@@ -31,7 +31,7 @@ class Tracker(object):
       sys.exit()
 
 
-  def create_issue(self, title, message_text, priority):
+  def create_issue(self, title, message_text):
     """
     TODO 
       - write docs
