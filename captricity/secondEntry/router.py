@@ -13,6 +13,7 @@ import re
 import pyPdf
 from secondEntry.sample import CensusBlockLookup, SurveyPathLookup
 import secondEntry.config
+import secondEntry.trackercomm
 import shutil
 
 logger = logging.getLogger(__name__)
@@ -90,6 +91,7 @@ class ScanFile(object):
     cblookup = CensusBlockLookup()
     svplookup = SurveyPathLookup()
     svptemplates = secondEntry.config.get_template_map()
+    tracker = secondEntry.trackercomm.Tracker()
 
     def __init__(self, file):
         """
@@ -109,6 +111,8 @@ class ScanFile(object):
         pat = re.match(ScanFile.scan_fn_pat, self.filename, re.IGNORECASE)
 
         if pat is None:
+            msg = '{} does not appear to be a well-formed scan file.'.format(self.filename)
+            ScanFile.tracker.create_issue(title="invalid q id", message_text=msg, priority=10)            
             raise ValueError('{} does not appear to be a well-formed scan file'.format(file))
 
         self.censusblock = pat.groups()[0]
@@ -126,6 +130,8 @@ class ScanFile(object):
             self.id = str(self.censusblock[:2]) + '_' + re.match("_quest(\d{5})", thistype).groups()[0]
             # be sure the questionnaire ID is valid (could be problem with the filename)
             if not ScanFile.svplookup.is_valid_qid(self.id):
+                msg = '{} does not appear to be a valid questionnaire id.'.format(self.id)
+                ScanFile.tracker.create_issue(title="invalid q id", message_text=msg, priority=10)
                 raise ValueError('{} does not appear to be a valid questionnaire id.'.format(self.id))
 
             # and keep track of the survey path this questionnaire should take
@@ -141,11 +147,21 @@ class ScanFile(object):
         self.blocktype = ScanFile.cblookup.cbs[self.censusblock]
 
     def split_pdf(self, dest_dir):
+        """
+        TODO
+        """
 
-        thispdf = pyPdf.PdfFileReader(file(self.fullpath, 'rb'))
+        try:
+            thispdf = pyPdf.PdfFileReader(file(self.fullpath, 'rb'))
+        except BaseException, msg:
+            raise BaseException('questionnaire {} does not have 22 pages!'.format(self.fullpath))
 
         if self.type == "questionnaire":
 
+            # NB: if this gives us lots of trouble, we can avoid using getNumPages()
+            # by running pdfinfo; see
+            # http://www.quora.com/Which-Python-library-will-let-me-check-how-many-pages-are-in-a-PDF-file
+            # (we're not doing this for now)
             if thispdf.getNumPages() != 22:
                 raise BaseException('questionnaire {} does not have 22 pages!'.format(self.fullpath))
 
@@ -188,8 +204,7 @@ class Router(object):
     def __init__(self, configdir=os.path.expanduser("~/.scaleupbrazil")):
 
         self.configdir = configdir
-
-        ## TODO - read configuration file...
+        self.scandirs = secondEntry.config.get_scan_dirs(os.path.join(configdir, 'scan-directories.json'))
 
     def stage(self, image_directory, qtypes=["individual"]):
         """
@@ -209,7 +224,8 @@ class Router(object):
 
         pass #TODO              
 
-    def questionnaires_in_dir(self, image_directory, pattern=ScanFile.scan_fn_pat):
+    def questionnaires_in_dir(self, image_directory, 
+                              pattern=ScanFile.scan_fn_pat):
       """
       given a directory and a file pattern, return a list of the questionnaires whose images
       are in the directory
@@ -222,7 +238,9 @@ class Router(object):
       badfiles = set(files) - set(okfiles)
 
       for bf in badfiles:
-        logger.error("{} is not a well-formed filename!".format(bf))        
+        shutil.copy(os.path.join(os.path.expanduser(image_directory),bf), self.scandirs['staging_error'])
+        # TODO -- eventually move instead of copy
+        logger.error("{} is not a well-formed filename! Moving to staging error directory...".format(bf))        
 
       resfiles = []
 
@@ -231,18 +249,31 @@ class Router(object):
             thissf = ScanFile(os.path.join(os.path.expanduser(image_directory),f))
             resfiles.append(thissf)
         except BaseException, obj:
-            print 'error converting ', f, ':', obj.message
-            pass
+            shutil.copy(os.path.join(os.path.expanduser(image_directory),f), self.scandirs['staging_error'])
+            # TODO - eventually move instead of copy
+            logger.error('error converting {} : {}'.format(f,obj.message))
 
       return resfiles
 
     def stage_files(self, qs):
+        """
+        TODO
+        """
+
+        staged = []
+        not_staged = []
 
         for q in qs:
             try:
                 q.split_pdf("~/Dropbox/brazil/scans-staging")
+                staged.append(q)
             except BaseException, msg:
-                logger.error("ERROR splitting pdf {}: {}".format(q.fullpath, msg.message))
+                shutil.copy(q.fullpath, self.scandirs['staging_error'])
+                not_staged.append(q)
+                # TODO -- eventually move instead of copy
+                logger.error("ERROR splitting pdf {}: {}; moved to error directory".format(q.fullpath, msg.message))
+
+        return staged, not_staged
 
 
 
