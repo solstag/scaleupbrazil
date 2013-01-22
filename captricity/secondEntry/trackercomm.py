@@ -11,8 +11,8 @@ import secondEntry.config
 from roundup import instance, date
 import logging
 
-#logger = logging.getLogger(__name__)
-#logger.propagate = False
+logger = logging.getLogger(__name__)
+logger.propagate = False
 
 class Tracker(object):
 
@@ -53,13 +53,15 @@ class Tracker(object):
       if message_text:
         thismsg = [db.msg.create(content=message_text,
                                  author=uid, date=date.Date())]
-      res=db.bug.create(title=title, 
-                        messages=thismsg)
+      #res=db.bug.create(title=title, 
+      #                  messages=thismsg)
+      res=db.issue.create(title=title, 
+                        messages=thismsg)      
 
       db.commit()
 
     except BaseException, msg:
-      #logger.error("Exception raised in create_issue: {}".format(msg.message))
+      logger.error("Exception raised when trying to add issue to tracker in create_issue: {}".format(msg.message))
       #import pdb; pdb.set_trace()
       pass
     finally:
