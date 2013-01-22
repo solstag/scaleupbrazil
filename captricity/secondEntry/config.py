@@ -38,15 +38,18 @@ def get_scan_dirs(template_file="~/.scaleupbrazil/scan-directories.json"):
 
   return res
 
-def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
+def get_template_map(template_file):
   """
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
   """
 
-  ## TODO-EXCEPTION
-  infile = open(os.path.expanduser(template_file), 'r')
-  res = json.load(infile)
-  infile.close()
+  try:
+    infile = open(os.path.expanduser(template_file), 'r')
+    res = json.load(infile)
+    infile.close()
+  except:
+    print "ERROR opening template map..."
+    sys.exit()
 
   return res
 

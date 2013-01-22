@@ -19,36 +19,6 @@ import shutil
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
-def get_template_map(template_file):
-  """
-  read in the file that has the mapping from survey paths to the corresponding document/template IDs
-  """
-
-  try:
-    infile = open(os.path.expanduser(template_file), 'r')
-    res = json.load(infile)
-    infile.close()
-  except:
-    print "ERROR opening template map..."
-    sys.exit()
-
-  return res
-
-def get_survey_paths(svypath_file):
-  """
-  read in the file that maps questionnaire IDs to the various templates that each questionnaire
-  should use.
-  """
-
-  ## TODO-EXCEPTION
-  infile = csv.DictReader(open(os.path.expanduser(svypath_file), 'r'))  
-  ## the .csv file's first column is the row number, which we don't need
-  svy_paths = [x for x in infile]  
-  delblank = lambda x: x.pop('') and x
-  svy_paths = map(delblank, svy_paths)
-
-  return svy_paths
-
 def extract_pdf_pages(inpdf, outfile, pages):
     """
     take pages from a pdf file and save them in another pdf file
