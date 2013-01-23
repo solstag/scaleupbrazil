@@ -91,54 +91,6 @@ class ScanClient(Client):
 
     return dict(zip(job_names, job_docids)), dict(zip(job_names, job_ids))  
 
-  def upload_questionnaires(self, job_id, questionnaire_ids, 
-                            image_path, pages=xrange(22)):
-    """
-    Take a list of questionnaire IDs that should be uploaded, the id of the job that
-    we  want to associate them with, and the path to the directory where they are
-    stored.
-    For each questionnaire to upload, read the jpg files for all of its pages in,
-    associate it with an image set, and upload them.
-
-    NB: this function assumes that the questionnaire filenames have the form
-         quest_QID-PGN.jpg
-    where QID is the questionnaire ID (eg: 28_00143), and
-          PGN is the page number (eg: 003)
-    """
-
-    # TODO-EXCEPTION
-    # check that job_id exists and is unfinished
-
-    # page numbers from prepare-images.py have three digits (w/ leading 0s)
-    pages = ["{num:03d}".format(num=int(z)) for z in pages]
-
-    for qid in questionnaire_ids:
-
-      print "uploading questionnaire {}, pages {}".format(qid, pages)
-      print "target job id: {}".format(job_id)
-
-      # grab the filenames for all of the pages associated with this questionnaire
-      filenames = ["{}/quest_{}-{}.jpg".format(image_path, qid, x) for x in pages]
-
-      # TODO-EXCEPTION
-      # check that the filenames exist/make sense, etc
-
-      # create an instance set to hold all of the page images for this questionnaire
-      post_data = {'name' : qid}
-      instance_set = self.create_instance_sets(job_id, post_data)
-
-      # this is a bit tricky: the page number of the instance set is not, in general,
-      # the same as the page number of the questionnaire (which is what the filename is based on)
-      # fill the instance set in with the images for each page of the questionnaire
-      for page_number, filename in enumerate(filenames):
-        post_data = {'image' : open(filename),
-                     'image_name' : 'page {}'.format(pages[page_number])}
-
-        # TODO-EXCEPTION - check for problems with POST
-        self.create_iset_instance(instance_set['id'], page_number, post_data)
-        print "... page {} ({} of questionnaire)".format(page_number, pages[page_number])
-      
-    print "done."
 
 
 
