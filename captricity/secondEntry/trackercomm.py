@@ -1,6 +1,4 @@
 """
-trackercomm.py
-
 classes and functions related to interacting with the roundup
 tracker that we're going to use to keep track of problems...
 """

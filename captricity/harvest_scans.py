@@ -1,12 +1,9 @@
 #! /usr/bin/env python
 # coding: utf-8
 """
-   harvest_scans
-   ~~~~~~~~~~~~~
-
-   command-line utility which takes scans uploaded to the ftp server,
-   and moves them from different scanners' accounts into one central
-   directory
+command-line utility which takes scans uploaded to the ftp server,
+and moves them from different scanners' accounts into one central
+directory
 """
 
 import sys
@@ -22,7 +19,7 @@ logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
 logger = logging.getLogger("scan")
 logger.propagate = False
 
-from secondEntry import *
+#from secondEntry import *
 from secondEntry.router import *
 
 def grab_filenames(topdir, regex = "\\.pdf$"):

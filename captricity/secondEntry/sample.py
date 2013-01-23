@@ -1,6 +1,4 @@
 """
-sample.py
-
 classes and functions related to interacting with the Brazil study sample
 """
 

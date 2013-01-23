@@ -1,6 +1,4 @@
 """
-apicomm.py
-
 classes and functions related to interacting with Captricity's api
 these are built on top of Captricity's own captools library
 """
@@ -13,27 +11,13 @@ import time
 import datetime
 import dateutil.parser
 from subprocess import call
+import secondEntry.config as sec
 from captools.api import Client
-
-def get_token(configdir):
-  """
-  get the captricity API token from a file in the specified directory
-
-  Args:
-    configdir: the directory with the configuration files; defaults to ~/.scaleupbrazil
-  Returns:
-    the api token stored in the file 'captricity-token'
-  """
-  # TODO-EXCEPTION
-  token_file = open(os.path.join(os.path.expanduser(configdir), 'captricity-token'))
-  api_token = token_file.readlines()[0].strip()
-  token_file.close()
-  return api_token
 
 class ScanClient(Client):
 
   def __init__(self, configdir=os.path.expanduser("~/.scaleupbrazil/")):
-    self.token = get_token(configdir)
+    self.token = sec.get_token(configdir)
     Client.__init__(self, self.token)
 
 
@@ -42,6 +26,15 @@ class ScanClient(Client):
     create a new job, which is a document (template) and
     one or many scanned-in surveys (image sets).
     the default document_id, 1969, is the entire individual questionnaire
+
+    Args:
+      document_id: the id of the document (template) that the job will use
+      job_name: the name to give this job. TODO FORMAT CONVENTION
+
+    Returns:
+      the job object that gets created
+    Throws:
+      TODO
     """
     # TODO-EXCEPTION - check document exists
     post_data = { 'document_id' : document_id }

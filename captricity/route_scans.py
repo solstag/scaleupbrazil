@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 """
-   route_scans
-   ~~~~~~~~~~~~~
-
-   command-line utility which takes scans collected by harvest_scans.py
-   and splits them up into appropriate staging directories for uploading
-   to captricity
+ command-line utility which takes scans collected by harvest_scans.py
+ and splits them up into appropriate staging directories for uploading
+ to captricity
 """
 import logging, logging.config
 import os, sys
@@ -57,13 +54,14 @@ def main():
   router = ser.Router()
 
   logger.info('starting router q search...')
+  
   # get all all of the questionnaires in the raw scans directory
   res = router.questionnaires_in_dir(pdfpath)
-
 
   # split all of the questionnaires up and move them into the appropriate
   # staging directories
   staged, not_staged = router.stage_files(res)
+
 
   staged_counts = count_types(staged)
   not_staged_counts = count_types(not_staged)

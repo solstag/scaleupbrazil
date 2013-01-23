@@ -1,12 +1,25 @@
 """
-config.py
-
 manage configuration settings for our double-entry / captricity app
 """
 
 import sys
 import os
 import json
+
+def get_token(configdir):
+  """
+  get the captricity API token from a file in the specified directory
+
+  Args:
+    configdir: the directory with the configuration files; defaults to ~/.scaleupbrazil
+  Returns:
+    the api token stored in the file 'captricity-token'
+  """
+  # TODO-EXCEPTION
+  token_file = open(os.path.join(os.path.expanduser(configdir), 'captricity-token'))
+  api_token = token_file.readlines()[0].strip()
+  token_file.close()
+  return api_token
 
 def get_roundup_info(config_file="~/.scaleupbrazil/roundup.conf"):
   """
@@ -38,7 +51,7 @@ def get_scan_dirs(template_file="~/.scaleupbrazil/scan-directories.json"):
 
   return res
 
-def get_template_map(template_file):
+def get_template_map(template_file="~/.scaleupbrazil/template-ids.json"):
   """
   read in the file that has the mapping from survey paths to the corresponding document/template IDs
   """

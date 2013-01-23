@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 """
-job_status.py
-~~~~~~~~~~~~~
-
 helper utility which gets the status of all of the jobs...
 
 see:
@@ -56,5 +53,5 @@ def main():
           print '\tdocument id:', job['document_id']
       print '\tjob id:', job['id']
 
-if "__name__" == "__main__":
+if __name__ == "__main__":
   main()
