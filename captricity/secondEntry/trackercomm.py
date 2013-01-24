@@ -10,7 +10,6 @@ from roundup import instance, date
 import logging
 
 logger = logging.getLogger(__name__)
-logger.propagate = False
 
 class Tracker(object):
 
@@ -25,7 +24,7 @@ class Tracker(object):
     try:
       self.config = secondEntry.config.get_roundup_info(config_file)
     except BaseException:
-      #logger.error("can't open the configuration file for the tracker user.")
+      logger.error("can't open the configuration file for the tracker user.")
       sys.exit()
 
 
@@ -60,7 +59,6 @@ class Tracker(object):
 
     except BaseException, msg:
       logger.error("Exception raised when trying to add issue to tracker in create_issue: {}".format(msg.message))
-      #import pdb; pdb.set_trace()
       pass
     finally:
       if db:
