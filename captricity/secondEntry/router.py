@@ -9,16 +9,16 @@ import csv
 import logging
 import re
 import pyPdf
-from secondEntry.sample import CensusBlockLookup, SurveyPathLookup
-from secondEntry.apicomm import ScanClient
-import secondEntry.config
-import secondEntry.trackercomm
 import shutil
 import datetime
 import dateutil
+from secondEntry import *
+#import secondEntry.config
+#import secondEntry.trackercomm
+#import secondEntry.apicomm
+#from secondEntry import CensusBlockLookup, SurveyPathLookup, ScanClient
 
 logger = logging.getLogger(__name__)
-logger.propagate = False
 
 def extract_pdf_pages(inpdf, outfile, pages):
     """
@@ -206,6 +206,8 @@ class Router(object):
 
         self.configdir = configdir
         self.scandirs = secondEntry.config.get_scan_dirs(os.path.join(configdir, 'scan-directories.json'))
+        self.unstarted_jobs = []
+        self.started_jobs = []
 
     def questionnaires_in_dir(self, 
                               image_directory, 
@@ -288,6 +290,8 @@ class Router(object):
 
         return staged, not_staged
 
+
+
     def create_jobs(self, stage_root_dir="~/Dropbox/brazil/scans-staging"):
         """
         create jobs and upload survey forms for all of the subdirectories
@@ -315,7 +319,7 @@ class Router(object):
 
         today = datetime.datetime.now()
 
-        new_job_ids = []
+        new_jobs = []
 
         # NB: for now, we're assuming that all of the survey paths described
         # are for individual questionnaires. this could change if we start to handle
@@ -348,7 +352,7 @@ class Router(object):
                 this_job = client.new_job(document_id=this_docid,
                                           job_name=this_job_name)
 
-                new_job_ids.append(this_job['id'])
+                new_jobs.append(this_job)
 
                 # go through and upload each file in the directory; associate
                 # it with the job we just created
@@ -362,6 +366,8 @@ class Router(object):
                     this_fullpath = this_scanfile.fullpath
                     this_iset_name = '{} - {}'.format(this_job_name, this_file)
 
+                    # TODO - consider making uploading files / creating isets
+                    #        part of client class instead of router...
                     this_iset = client.create_instance_sets(this_job['id'],
                                                             {
                                                              'name' : this_iset_name,
@@ -370,8 +376,31 @@ class Router(object):
 
 
         logger.info('finished creating jobs')
-        return new_job_ids
 
+        self.unstarted_jobs = self.unstarted_jobs + new_jobs
+
+        return new_jobs
+
+    def start_jobs(self):
+        """
+        start any jobs that have been created but not started
+        (costs money!)        
+        """
+
+        try:
+            client = ScanClient()
+        except BaseException, msg:
+            logger.error("Can't start ScanClient")
+            raise
+
+        if self.unstarted_jobs:
+            logger.info('router is starting job submissions...')
+            started, unstarted = client.start_questionnaire_jobs(self.unstarted_jobs)
+            self.started_jobs.append(started)
+            self.unstarted_jobs = []
+            self.unstarted_jobs.append(unstarted)
+        else:
+            logger.info('router has no jobs to submit...')        
 
 
 

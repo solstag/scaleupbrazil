@@ -12,9 +12,14 @@ import sys
 import os
 import re
 import argparse
-from secondEntry.apicomm import *
+import logging
+from secondEntry import *
+import secondEntry as se
 
 def main():
+
+  logger = se.config.start_log()
+
   parser = argparse.ArgumentParser(description='Check the status of Captricity jobs')
   
   parser.add_argument('-p', '--pattern', action="store",
@@ -32,7 +37,9 @@ def main():
 
   args = parser.parse_args()
     
-  client = ScanClient()
+  client = se.ScanClient()
+
+  logger.info('grabbed jobs...')
 
   print 'Jobs:'
 

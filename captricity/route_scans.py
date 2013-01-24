@@ -8,13 +8,10 @@
 import logging, logging.config
 import os, sys
 from collections import defaultdict
-
-logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
-logger = logging.getLogger("scan")
-logger.propagate = False
-
 import secondEntry.router as ser
 import secondEntry.config as sec
+
+logger = logging.getLogger(__name__)
 
 def count_types(qs):
   """
@@ -54,7 +51,7 @@ def main():
   router = ser.Router()
 
   logger.info('starting router q search...')
-  
+
   # get all all of the questionnaires in the raw scans directory
   res = router.questionnaires_in_dir(pdfpath)
 

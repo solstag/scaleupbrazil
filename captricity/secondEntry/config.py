@@ -5,6 +5,20 @@ manage configuration settings for our double-entry / captricity app
 import sys
 import os
 import json
+import logging
+
+def start_log(configdir="~/.scaleupbrazil/logger.conf", logger_name="scan"):
+  """
+  start the default logger for the package...
+  (TODO - eventually, this might go to more than one logfile
+          eg for uploads vs downloads)
+  """
+
+  logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
+  logger = logging.getLogger(logger_name)
+  logger.propagate = False
+
+  return logger
 
 def get_token(configdir):
   """

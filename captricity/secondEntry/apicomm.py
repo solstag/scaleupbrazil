@@ -14,6 +14,8 @@ from subprocess import call
 import secondEntry.config as sec
 from captools.api import Client
 
+logger = logging.getLogger(__name__)
+
 class ScanClient(Client):
 
   def __init__(self, configdir=os.path.expanduser("~/.scaleupbrazil/")):
@@ -53,6 +55,8 @@ class ScanClient(Client):
     """
     jobs = self.read_jobs()
 
+    logger.info('getting jobs...')
+
     if name_pattern != None:
       jobs = filter( lambda x: bool(re.search(name_pattern, x['name'])), jobs )
 
@@ -76,6 +80,43 @@ class ScanClient(Client):
 
     return jobs
     
+  def start_questionnaire_jobs(self, jobs):
+    """
+    given a list of job id numbers, go through and start the jobs
+    (this will cost money!)
+
+    Args:
+      jobs: a list of job objects to be submitted (not just the ids)
+    Returns:
+      ok_jobs, prob_jobs
+      where ok_jobs is a list of jobs successfully submitted
+      and prob_jobs is a list of jobs that could not be submitted
+    """
+
+    ok_jobs = []
+    prob_jobs = []
+
+    for job in jobs:
+      ## TODO-EXCEPTION: double-check that the job exists
+      ##   and is incomplete before launching...
+      res = self.read_job_readiness(job['id'])
+
+      if not res or not res['is_ready_to_submit']:
+        prob_jobs.append(job)
+        logger.error("Error: job {} not ready to submit".format(job['id']))
+        continue
+
+      price = self.read_job_price(job['id'])
+
+      logger.info("submitting job {} at price {} cents".format(job['id'],
+                                                               price['total_job_cost_in_cents']))
+
+      # TEMP -- actual submission is disabled while fixing logging...
+      #self.submit_job(job['id'], {})
+
+      ok_jobs.append(job)
+
+    return ok_jobs, prob_jobs
 
   def document_info(self):
     """

@@ -15,10 +15,6 @@ import datetime
 import logging
 import logging.config
 
-logging.config.fileConfig(os.path.expanduser("~/.scaleupbrazil/logger.conf"))
-logger = logging.getLogger("scan")
-logger.propagate = False
-
 #from secondEntry import *
 from secondEntry.router import *
 
@@ -42,7 +38,6 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
   return res
 
 def main():
-
 
   logger.info('harvest_scans started')
 
