@@ -78,19 +78,6 @@ def create_questionnaire_jobs(client,
   return(jobs)
 
 
-def start_questionnaire_jobs(client, jobs):
-  """
-  given a list of job id numbers, go through and start the jobs
-  (this will cost money!)
-  """
-
-  for job in jobs:
-    ## TODO-EXCEPTION: double-check that the job exists
-    ##   and is incomplete before launching...
-
-    print "launching job {} (id: {})".format(job['name'], job['id'])
-    client.launch_job(job['id'])
-
 def get_qid_maps(client, job_ids = None):
   """
   given a list of job ids this function

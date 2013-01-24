@@ -13,9 +13,6 @@ import shutil
 import datetime
 import dateutil
 from secondEntry import *
-#import secondEntry.config
-#import secondEntry.trackercomm
-#import secondEntry.apicomm
 #from secondEntry import CensusBlockLookup, SurveyPathLookup, ScanClient
 
 logger = logging.getLogger(__name__)

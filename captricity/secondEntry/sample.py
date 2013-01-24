@@ -7,6 +7,9 @@ import os
 import csv
 import logging
 
+logger = logging.getLogger(__name__)
+
+
 class SurveyPathLookup(object):
 	"""
 	lookup table for info about survey paths for each interview
@@ -34,8 +37,9 @@ class SurveyPathLookup(object):
 		      self.lookup[x['id']] = x
 		    infile.close()
 		  except BaseException, msg:
-		    print "ERROR reading survey path file ", filename, ":", msg.message
-		    sys.exit()
+		  	logger.error("problem reading survey path file {} : {}".format(filename,
+		  		                                                           str(msg)))
+		  	raise
 
 	def is_valid_qid(self, qid):
 		"""
@@ -78,8 +82,9 @@ class CensusBlockLookup(object):
 		      self.cbs[x['census_block']] = int(x['status'])
 		    infile.close()
 		  except BaseException, msg:
-		    print "ERROR reading census block file ", filename, ":", msg.message
-		    sys.exit()
+		  	logger.error("problem reading census block file {} : {}".format(filename,
+		  		                                                           str(msg)))
+		  	raise
 
 	def is_valid_censusblock(self, cb):
 		"""
