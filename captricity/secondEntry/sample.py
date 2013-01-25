@@ -7,7 +7,7 @@ import os
 import csv
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('scan.' + __name__)
 
 
 class SurveyPathLookup(object):

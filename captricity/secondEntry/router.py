@@ -9,13 +9,12 @@ import csv
 import logging
 import re
 import pyPdf
-import shutil
 import datetime
 import dateutil
-from secondEntry import *
-#from secondEntry import CensusBlockLookup, SurveyPathLookup, ScanClient
+import secondEntry as se
+from secondEntry import CensusBlockLookup, SurveyPathLookup, ScanClient
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('scan.' + __name__)
 
 def extract_pdf_pages(inpdf, outfile, pages):
     """
@@ -39,9 +38,9 @@ def extract_pdf_pages(inpdf, outfile, pages):
     outpdf.write(outstream)
     outstream.close()
 
-def complain(title, msg, exceptiontype):
+def submit_bug(title, msg):
     """
-    submit a bug report and then raise an exception
+    submit a bug report
     """
 
     ScanFile.tracker.create_issue(title=title, message_text=msg)
@@ -65,10 +64,10 @@ class ScanFile(object):
 
     scan_fn_pat = "(\d{15})(_quest\d{5}|_id\d{2})?$"    
 
-    cblookup = CensusBlockLookup()
-    svplookup = SurveyPathLookup()
-    svptemplates = secondEntry.config.get_template_map()
-    tracker = secondEntry.trackercomm.Tracker()
+    cblookup = se.CensusBlockLookup()
+    svplookup = se.SurveyPathLookup()
+    svptemplates = se.config.get_template_map()
+    tracker = se.Tracker()
 
     def __init__(self, file):
         """
@@ -84,13 +83,13 @@ class ScanFile(object):
         # figure out what type of file this is
         if not re.search("(pdf|tiff)", self.ext, re.IGNORECASE):
             msg = '{} does not appear to be a pdf or tiff'.format(file)
-            complain("bad filetype", msg, ValueError)
+            raise ValueError(msg)
 
         pat = re.match(ScanFile.scan_fn_pat, self.filename, re.IGNORECASE)
 
         if pat is None:
             msg = '{} does not appear to be a well-formed scan file.'.format(self.filename)
-            complain("bad filename", msg, ValueError)
+            raise ValueError(msg)
 
         self.censusblock = pat.groups()[0]
 
@@ -109,7 +108,7 @@ class ScanFile(object):
             # be sure the questionnaire ID is valid (could be problem with the filename)
             if not self.id or not ScanFile.svplookup.is_valid_qid(self.id):
                 msg = '{} does not appear to be a valid questionnaire id.'.format(self.id)
-                complain("bad questionnaire id", msg, ValueError)
+                raise ValueError(msg)
 
             # and keep track of the survey path this questionnaire should take
             self.survey_path = ScanFile.svplookup.lookup[self.id]
@@ -117,12 +116,12 @@ class ScanFile(object):
                 del self.survey_path['id']
         else:
             msg = 'This filename does not seem to be of the required type ({})'.format(thistype)
-            complain("wrong filename format", msg, ValueError)
+            raise ValueError(msg)
 
         # figure out if this census block is valid
         if not ScanFile.cblookup.is_valid_censusblock(self.censusblock):
             msg = '{} does not appear to be from a valid census block in filename {}'.format(self.censusblock, file)
-            complain("invalid census block", msg, ValueError)
+            raise ValueError(msg)
 
         self.blocktype = ScanFile.cblookup.cbs[self.censusblock]
 
@@ -146,7 +145,8 @@ class ScanFile(object):
             thispdf = pyPdf.PdfFileReader(file(self.fullpath, 'rb'))
         except BaseException, msg:
             msg = 'error opening pdf file {} with pyPdf'.format(self.fullpath)
-            complain("problem opening pdf file", msg, BaseException)
+            log.error(msg)
+            raise
 
         if self.type == "questionnaire":
 
@@ -156,7 +156,7 @@ class ScanFile(object):
             # (we're not doing this for now)
             if thispdf.getNumPages() != 22:
                 msg = 'questionnaire {} does not have 22 pages!'.format(self.fullpath)
-                complain("wrong number of pages", msg, BaseException)
+                raise BaseException(msg)
 
             logger.info('splitting {}'.format(self.filename))
 
@@ -167,42 +167,46 @@ class ScanFile(object):
                 if value not in ["0", "00"]:
                     thesepages = ScanFile.svptemplates[name][value]['pages']
                     destpdf = os.path.join(outdir, self.filename + '.pdf')
-
                     extract_pdf_pages(thispdf, destpdf, thesepages)
+
+            # TODO -- uncomment this if, for debugging,
+            # we want to copy and not move...
+            #logger.info('removing {}'.format(self.filename))            
+            #os.remove(self.fullpath)
 
         elif self.type == "fichadecampo":
             if thispdf.getNumPages() != 2:
                 msg = 'ficha de campo {} does not have 2 pages!'.format(self.fullpath)
-                complain("wrong number of pages", msg, BaseException)
+                raise BaseException(msg)
 
             logger.info('copying {}'.format(self.filename))
 
             outdir = os.path.join(os.path.expanduser(dest_dir), 'fichadecampo')
             outfile = os.path.join(outdir, self.filename + '.pdf')
-            shutil.copy(self.fullpath, outfile)
+            #se.move_file(self.fullpath, outfile)
 
         elif self.type == "contactsheet":
             if thispdf.getNumPages() != 2:
                 msg = 'contact sheet {} does not have 2 pages!'.format(self.fullpath)
-                complain("wrong number of pages", msg, BaseException)
+                raise BaseException(msg)
 
             logger.info('copying {}'.format(self.filename))
 
             outdir = os.path.join(os.path.expanduser(dest_dir), 'contactsheet')
             outfile = os.path.join(outdir, self.filename + '.pdf')
-            shutil.copy(self.fullpath, outfile)
+            #se.move_file(self.fullpath, outfile)
         else:
             msg = 'file {} is of unknown type!'.format(self.fullpath)
-            complain("unknown file type", msg, BaseException)
+            raise BaseException(msg)
 
 class Router(object):
 
-    svptemplates = secondEntry.config.get_template_map()
+    svptemplates = se.config.get_template_map()
 
     def __init__(self, configdir=os.path.expanduser("~/.scaleupbrazil")):
 
         self.configdir = configdir
-        self.scandirs = secondEntry.config.get_scan_dirs(os.path.join(configdir, 'scan-directories.json'))
+        self.scandirs = se.config.get_scan_dirs(os.path.join(configdir, 'scan-directories.json'))
         self.unstarted_jobs = []
         self.started_jobs = []
 
@@ -231,8 +235,10 @@ class Router(object):
 
       if move_bad:
           for bf in badfiles:
-            shutil.copy(os.path.join(os.path.expanduser(image_directory),bf), self.scandirs['staging_error'])
-            # TODO -- eventually move instead of copy
+            # this really shouldn't happen, because the filenames get checked
+            # when they are harvested from the ftp upload directories to the raw
+            # scans directories
+            se.move_file(os.path.join(os.path.expanduser(image_directory),bf), self.scandirs['staging_error'])
             msg = "{} is not a well-formed filename! Moving to staging error directory...".format(bf)
             ScanFile.tracker.create_issue(title='bad filename', message_text=msg)
             logger.error(msg)
@@ -245,9 +251,8 @@ class Router(object):
         except BaseException, obj:
             msg = 'error converting {} : {}'.format(f,obj)
             if move_bad:
-                shutil.copy(os.path.join(os.path.expanduser(image_directory),f), 
-                            self.scandirs['staging_error'])
-                # TODO - eventually move instead of copy
+                se.move_file(os.path.join(os.path.expanduser(image_directory),f), 
+                             self.scandirs['staging_error'])
             ScanFile.tracker.create_issue(title="error converting", message_text=msg)
             logger.error(msg)
         
@@ -260,6 +265,11 @@ class Router(object):
         route the scanned images in a given directory to appropriate staging
         directories and figure out which paths they should take through captricity
 
+        stage_files checks the list of already-staged files, using
+        secondEntry.config.read_already_staged(), and only stages files
+        that are not in that list. once it is finished, it updates the list
+        to reflect the files it just staged
+
         Args:
             qs: a list of ScanFile objects, one per questionnaire to be split
             stage_root_dir: the root directory where the staged pdfs should be sent
@@ -270,30 +280,44 @@ class Router(object):
             and not_staged is a lits of ScanFile objects that could not be staged.
         """
 
+        # read files that have already been staged
+        already_staged = se.config.read_already_staged(self.scandirs['already_staged'])
+
         staged = []
-        not_staged = []
+
+        not_staged = [q for q in qs if q.filename in already_staged]
+        qs = [q for q in qs if q.filename not in already_staged]
 
         for q in qs:
             try:
                 q.split_pdf(os.path.expanduser(stage_root_dir))
                 staged.append(q)
+
             except BaseException, msg:
-                shutil.copy(q.fullpath, self.scandirs['staging_error'])
+                se.move_file(q.fullpath, self.scandirs['staging_error'])
                 not_staged.append(q)
-                # TODO -- eventually move instead of copy
-                msg = "ERROR splitting pdf {}: {}; moved to error directory".format(q.fullpath, msg.message)
-                ScanFile.tracker.create_issue(title="error splitting pdf", message_text=msg)
+
+                msg = "ERROR splitting pdf {}: {}; moved to error directory".format(q.fullpath, str(msg))
+                title = "error splitting pdf {}".format(q.filename)
+                ScanFile.tracker.create_issue(title=title, message_text=msg)
                 logger.error(msg)
+
+        # update log of staged files...
+        staged_files = [q.filename for q in staged]
+        se.config.write_already_staged(self.scandirs['already_staged'], staged_files)
 
         return staged, not_staged
 
 
 
-    def create_jobs(self, stage_root_dir="~/Dropbox/brazil/scans-staging"):
+    def create_jobs(self):
         """
         create jobs and upload survey forms for all of the subdirectories
         of the given directory; each subdirectory should contain pdfs related
         to one template, as described by self.scandirs
+
+        if there is an error uploading a file, that file gets copied to the
+        upload_error error directory
 
         NB: for now, we're assuming that all of the survey paths described
         are for individual questionnaires. this could change if we start to handle
@@ -307,7 +331,7 @@ class Router(object):
         """        
 
         try:
-            client = ScanClient()
+            client = se.ScanClient()
         except BaseException, msg:
             logger.error("Can't start ScanClient")
             raise
@@ -317,6 +341,10 @@ class Router(object):
         today = datetime.datetime.now()
 
         new_jobs = []
+
+        stage_root_dir = self.scandirs['staging_pdfs']
+        uploaded_root_dir = self.scandirs['uploaded_pdfs']
+        errdir = self.scandirs['upload_error']
 
         # NB: for now, we're assuming that all of the survey paths described
         # are for individual questionnaires. this could change if we start to handle
@@ -357,19 +385,38 @@ class Router(object):
                 #   https://shreddr.captricity.com/developer/quickstart/completed-forms/ ]
 
                 for this_scanfile in these_files:
-                    logger.info('starting upload of {} to job {}'.format(this_scanfile.filename, this_job['id']))
+                    logger.info('starting upload of {} to job {}'.format(this_scanfile.filename, 
+                                                                         this_job['id']))
 
                     this_file = this_scanfile.filename + this_scanfile.ext
                     this_fullpath = this_scanfile.fullpath
                     this_iset_name = '{} - {}'.format(this_job_name, this_file)
 
-                    # TODO - consider making uploading files / creating isets
-                    #        part of client class instead of router...
-                    this_iset = client.create_instance_sets(this_job['id'],
-                                                            {
-                                                             'name' : this_iset_name,
-                                                             'multipage_file' : open(this_fullpath) 
-                                                            })
+                    # we should copy the file here after it has been uploaded
+                    this_donefile = os.path.join(uploaded_root_dir,
+                                                 'questionnaires',
+                                                 section + '_' + value,
+                                                 this_file)
+
+
+                    try:
+                        # TODO - consider making uploading files / creating isets
+                        #        part of client class instead of router...
+                        this_iset = client.create_instance_sets(this_job['id'],
+                                                                {
+                                                                 'name' : this_iset_name,
+                                                                 'multipage_file' : open(this_fullpath)                         
+                                                                })
+
+                        # move uploaded file out of staging directory...
+                        se.move_file(this_fullpath,
+                                     this_donefile)
+
+                    except IOError, ioe:
+                        msg = 'error uploading file {}; copied to error directory'.format(this_fullpath)
+                        logger.error(msg)
+                        ScanFile.tracker.create_issue(title="error uploading pdf", message_text=msg)
+                        se.move_file(this_fullpath, errdir)
 
 
         logger.info('finished creating jobs')

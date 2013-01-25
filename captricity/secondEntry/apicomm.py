@@ -14,7 +14,7 @@ from subprocess import call
 import secondEntry.config as sec
 from captools.api import Client
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('scan.' + __name__)
 
 class ScanClient(Client):
 

@@ -5,13 +5,10 @@
  and splits them up into appropriate staging directories for uploading
  to captricity
 """
-import logging, logging.config
 import os, sys
 from collections import defaultdict
-import secondEntry.router as ser
+import secondEntry as se
 import secondEntry.config as sec
-
-logger = logging.getLogger(__name__)
 
 def count_types(qs):
   """
@@ -48,12 +45,12 @@ def main():
     logger.error("ERROR trying to read configuration directories; exiting: {}.".format(msg.message))
     sys.exit()
 
-  router = ser.Router()
+  router = se.Router()
 
   logger.info('starting router q search...')
 
   # get all all of the questionnaires in the raw scans directory
-  res = router.questionnaires_in_dir(pdfpath)
+  res = router.questionnaires_in_dir(image_directory=pdfpath, move_bad=True)
 
   # split all of the questionnaires up and move them into the appropriate
   # staging directories
@@ -66,11 +63,10 @@ def main():
   print_counts('staged:', staged_counts)
   print_counts('not-staged:', not_staged_counts)
 
-  print 'finished routing...'
-  logger.info('finished routing...')
-
-
   logger.info('route_scans ended')
 
 if __name__=="__main__":
+
+  logger = se.config.start_log()
+
   main()

@@ -12,11 +12,7 @@ import shutil
 import re
 import argparse
 import datetime
-import logging
-import logging.config
-
-#from secondEntry import *
-from secondEntry.router import *
+import secondEntry as se
 
 def grab_filenames(topdir, regex = "\\.pdf$"):
   """
@@ -39,13 +35,15 @@ def grab_filenames(topdir, regex = "\\.pdf$"):
 
 def main():
 
+  logger = se.config.start_log()
+
   logger.info('harvest_scans started')
 
-  dirs = config.get_scan_dirs()
+  dirs = se.config.get_scan_dirs()
   
   indirs = dirs["scanner_directories"]
   outdir = dirs["collected_raw_pdfs"]
-  errdir = dirs["scan_error"]
+  errdir = dirs["harvesting_error"]
 
   allpdfs = []
 
@@ -54,31 +52,55 @@ def main():
     logger.info('grabbing files from %s' % thisdir)
     allpdfs.extend(grab_filenames(os.path.expanduser(thisdir), "\\.pdf$"))
 
+  # get all of the pdfs already in the raw scans directory...
+  already_scraped = os.listdir(outdir)
+
+  already_errors = os.listdir(errdir)
+
   # copy each file into the collected raw pdfs directory
-  print 'moving files into collected raw pdfs directory:', outdir
+  logger.info('moving files into collected raw pdfs directory: {}'.format(outdir))
   errcount = 0
   okcount = 0
+  notnewcount = 0
+  alreadyerrcount = 0
+
   for f in allpdfs:
 
     try:
-      sf = ScanFile(f)
+      this_file = os.path.basename(f)
+
+      sf = se.ScanFile(f)
       logger.info('COPY {} to {}'.format(sf.filename, os.path.join(outdir, os.path.basename(f))))
-      shutil.copy(f, outdir)
-      # TODO we may eventually want to move the scans instead of copying them
-      #shutil.move(f, outdir)
-      okcount += 1 
+
+      if not this_file in already_scraped:
+        se.copy_file(f, outdir)
+        okcount += 1
+      else:
+        notnewcount += 1
+
     except ValueError, err:
-      logger.error('NO COPY - {} is not a survey scan; moved to error directory; message: {}'.format(f, err.message))
-      shutil.copy(f, errdir)
-      # TODO we may eventually want to move the scans instead of copying them
-      #shutil.move(f, errdir)      
-      errcount += 1
+      # move this file to the error directory, unless it's already there...
+      if not this_file in already_errors:        
+        logger.error('NO COPY - {} is not a survey scan; moved to error directory; message: {}'.format(f, err.message))
+        se.copy_file(f, errdir)
+        msg = "Problem harvesting {}; it appears not to be a survey scan. Message: {}".format(f,str(err))
+        title = "problem harvesting {}".format(f)
+        se.ScanFile.tracker.create_issue(title=title, message_text=msg)
+        errcount += 1
+      else:
+        logger.info('{} already in error directory; ignoring.'.format(f))
+        alreadyerrcount += 1
 
-  print "successfully harvested", okcount, "scans."
+  print "successfully harvested {} scans.".format(okcount)
+  if notnewcount > 0:
+    print "there were {} files that had already been harvested.".format(notnewcount)
+  if alreadyerrcount > 0:
+    print "there were {} files that had already been found to be errors.".format(alreadyerrcount)
   if errcount > 0:
-    print "there were", errcount, "files that appear to be errors; check the log for more information."
+    print "there were {} files that appear to be errors; check the log for more information.".format(errcount)
 
-  logger.info('harvest_scans finished [errcount = {}; okcount = {}]'.format(errcount, okcount))
+
+  logger.info('harvest_scans finished [errcount = {}; notnewcount = {}; alreadyerrcount = {}; okcount = {}]'.format(errcount, notnewcount, alreadyerrcount, okcount))
 
 if __name__ == "__main__":
   main()

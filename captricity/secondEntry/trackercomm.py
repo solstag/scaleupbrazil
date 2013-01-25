@@ -9,7 +9,7 @@ import secondEntry.config
 from roundup import instance, date
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('scan.' + __name__)
 
 class Tracker(object):
 
