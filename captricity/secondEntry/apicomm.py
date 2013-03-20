@@ -3,6 +3,7 @@ classes and functions related to interacting with Captricity's api
 these are built on top of Captricity's own captools library
 """
 
+import re
 import sys
 import os
 import csv
@@ -111,8 +112,8 @@ class ScanClient(Client):
       logger.info("submitting job {} at price {} cents".format(job['id'],
                                                                price['total_job_cost_in_cents']))
 
-      # TEMP -- actual submission is disabled while fixing logging...
-      #self.submit_job(job['id'], {})
+      # comment this line out if you want to disable actual jobs starting...
+      self.submit_job(job['id'], {})
 
       ok_jobs.append(job)
 
