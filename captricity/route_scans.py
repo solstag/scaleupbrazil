@@ -54,7 +54,7 @@ def main():
 
   # split all of the questionnaires up and move them into the appropriate
   # staging directories
-  staged, not_staged = router.stage_files(res)
+  staged, not_staged = router.stage_files(res, stage_root_dir=sec.get_scan_dirs()['staging_pdf'])
 
 
   staged_counts = count_types(staged)
